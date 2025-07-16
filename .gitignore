@@ -13,6 +13,7 @@ build/
 
 # Virtual environments
 venv/
+.venv/
 venv311/
 env/
 ENV/
@@ -41,3 +42,20 @@ pip.conf
 # OS specific
 .DS_Store
 Thumbs.db 
+
+
+# === Node.js  ===
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+dist/
+build/
+.vite/
+.cache/
+.eslintcache
+
+# === Front-end temporary product ===
+*.local
+*.tmp
+*.log
