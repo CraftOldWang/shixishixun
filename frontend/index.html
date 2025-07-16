@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>二次元AI英语学习助手</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-image: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        .container {
+            width: 90%;
+            max-width: 800px;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background-color: #ff9cce;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        }
+        .character-select {
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-bottom: 1px solid #eee;
+        }
+        .chat-container {
+            height: 400px;
+            overflow-y: auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .message {
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            border-radius: 18px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        .user-message {
+            background-color: #dcf8c6;
+            margin-left: auto;
+            border-bottom-right-radius: 5px;
+        }
+        .bot-message {
+            background-color: #ffffff;
+            margin-right: auto;
+            border-bottom-left-radius: 5px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        .input-container {
+            display: flex;
+            padding: 15px;
+            background-color: #f0f0f0;
+            border-top: 1px solid #ddd;
+        }
+        .message-input {
+            flex-grow: 1;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            outline: none;
+            font-size: 16px;
+        }
+        .send-button {
+            margin-left: 10px;
+            padding: 10px 20px;
+            background-color: #ff9cce;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .send-button:hover {
+            background-color: #ff7cb7;
+        }
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .option-button {
+            padding: 10px 15px;
+            background-color: #e1e1ff;
+            border: 1px solid #d0d0ff;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            transition: background-color 0.3s;
+        }
+        .option-button:hover {
+            background-color: #d0d0ff;
+        }
+        .character-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        .message-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        .character-name {
+            font-weight: bold;
+            color: #ff7cb7;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #888;
+        }
+        .correct {
+            border: 2px solid #4CAF50;
+        }
+        .incorrect {
+            border: 2px solid #F44336;
+        }
+        pre {
+            white-space: pre-wrap;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">二次元AI英语学习助手</div>
+        <div class="character-select">
+            <label for="character-dropdown">选择角色：</label>
+            <select id="character-dropdown">
+                <option value="友好的二次元少女">友好的二次元少女</option>
+                <option value="傲娇的二次元少女">傲娇的二次元少女</option>
+                <option value="知性的二次元大姐姐">知性的二次元大姐姐</option>
+                <option value="元气满满的运动少女">元气满满的运动少女</option>
+                <option value="害羞内向的文学少女">害羞内向的文学少女</option>
+            </select>
+        </div>
+        <div class="chat-container" id="chat-container">
+            <div class="message bot-message">
+                <div class="message-header">
+                    <img src="https://api.dicebear.com/6.x/anime/svg?seed=Mimi" alt="角色头像" class="character-avatar">
+                    <span class="character-name">友好的二次元少女</span>
+                </div>
+                欢迎使用二次元AI英语学习助手！请发送消息开始对话~
+            </div>
+        </div>
+        <div class="input-container">
+            <input type="text" class="message-input" id="message-input" placeholder="输入消息..." autocomplete="off">
+            <button class="send-button" id="send-button">发送</button>
+        </div>
+    </div>
+
+    <script>
+        // API基础URL
+        const API_BASE_URL = 'http://127.0.0.1:8000';
+        
+        // DOM元素
+        const chatContainer = document.getElementById('chat-container');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+        const characterDropdown = document.getElementById('character-dropdown');
+        
+        // 当前会话ID
+        let currentConversationId = '';
+        
+        // 角色头像映射
+        const characterAvatars = {
+            '友好的二次元少女': 'https://api.dicebear.com/6.x/anime/svg?seed=Mimi',
+            '傲娇的二次元少女': 'https://api.dicebear.com/6.x/anime/svg?seed=Tsundere',
+            '知性的二次元大姐姐': 'https://api.dicebear.com/6.x/anime/svg?seed=Oneesan',
+            '元气满满的运动少女': 'https://api.dicebear.com/6.x/anime/svg?seed=Genki',
+            '害羞内向的文学少女': 'https://api.dicebear.com/6.x/anime/svg?seed=Shy'
+        };
+        
+        // 发送消息
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            if (message === '') return;
+            
+            // 显示用户消息
+            addMessage(message, 'user');
+            
+            // 清空输入框
+            messageInput.value = '';
+            
+            // 显示加载中
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'message bot-message loading';
+            loadingDiv.textContent = '思考中...';
+            chatContainer.appendChild(loadingDiv);
+            
+            // 发送API请求
+            fetch(`${API_BASE_URL}/chat`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: message,
+                    character: characterDropdown.value
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // 移除加载中消息
+                chatContainer.removeChild(loadingDiv);
+                
+                // 显示机器人回复
+                addBotMessage(data);
+                
+                // 保存会话ID
+                currentConversationId = data.conversation_id;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                chatContainer.removeChild(loadingDiv);
+                addMessage('抱歉，发生了错误，请稍后再试。', 'bot');
+            });
+        }
+        
+        // 添加消息到聊天容器
+        function addMessage(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            
+            if (sender === 'bot') {
+                const character = characterDropdown.value;
+                const headerDiv = document.createElement('div');
+                headerDiv.className = 'message-header';
+                
+                const avatar = document.createElement('img');
+                avatar.src = characterAvatars[character] || characterAvatars['友好的二次元少女'];
+                avatar.alt = '角色头像';
+                avatar.className = 'character-avatar';
+                
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'character-name';
+                nameSpan.textContent = character;
+                
+                headerDiv.appendChild(avatar);
+                headerDiv.appendChild(nameSpan);
+                messageDiv.appendChild(headerDiv);
+            }
+            
+            const pre = document.createElement('pre');
+            pre.textContent = text;
+            messageDiv.appendChild(pre);
+            
+            chatContainer.appendChild(messageDiv);
+            
+            // 滚动到底部
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        // 添加机器人消息，包括选项处理
+        function addBotMessage(data) {
+            // 添加回复文本
+            addMessage(data.reply, 'bot');
+            
+            // 如果有选项，显示选项按钮
+            if (data.has_options && data.options && data.options.length > 0) {
+                const optionsContainer = document.createElement('div');
+                optionsContainer.className = 'options-container';
+                
+                data.options.forEach((option, index) => {
+                    const optionButton = document.createElement('button');
+                    optionButton.className = 'option-button';
+                    optionButton.textContent = option;
+                    optionButton.onclick = () => selectOption(index);
+                    optionsContainer.appendChild(optionButton);
+                });
+                
+                chatContainer.appendChild(optionsContainer);
+                
+                // 滚动到底部
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+        }
+        
+        // 选择选项
+        function selectOption(optionIndex) {
+            // 移除所有选项按钮
+            const optionsContainer = document.querySelector('.options-container');
+            if (optionsContainer) {
+                // 获取选中的选项文本
+                const selectedOptionText = optionsContainer.children[optionIndex].textContent;
+                
+                // 添加用户选择的消息
+                addMessage(selectedOptionText, 'user');
+                
+                // 移除选项容器
+                chatContainer.removeChild(optionsContainer);
+                
+                // 显示加载中
+                const loadingDiv = document.createElement('div');
+                loadingDiv.className = 'message bot-message loading';
+                loadingDiv.textContent = '思考中...';
+                chatContainer.appendChild(loadingDiv);
+                
+                // 发送选项到API
+                fetch(`${API_BASE_URL}/select_option`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        selected_option: optionIndex,
+                        conversation_id: currentConversationId
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // 移除加载中消息
+                    chatContainer.removeChild(loadingDiv);
+                    
+                    // 显示机器人回复
+                    addBotMessage(data);
+                    
+                    // 如果用户选择了错误的选项，高亮显示正确选项
+                    if (data.correct_option !== null && data.correct_option !== undefined) {
+                        // 用户选择了错误的选项
+                        const lastUserMessage = document.querySelectorAll('.user-message');
+                        if (lastUserMessage.length > 0) {
+                            lastUserMessage[lastUserMessage.length - 1].classList.add('incorrect');
+                        }
+                    } else {
+                        // 用户选择了正确的选项
+                        const lastUserMessage = document.querySelectorAll('.user-message');
+                        if (lastUserMessage.length > 0) {
+                            lastUserMessage[lastUserMessage.length - 1].classList.add('correct');
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    chatContainer.removeChild(loadingDiv);
+                    addMessage('抱歉，发生了错误，请稍后再试。', 'bot');
+                });
+            }
+        }
+        
+        // 事件监听器
+        sendButton.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keypress', event => {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        // 角色选择变更时更新头像
+        characterDropdown.addEventListener('change', () => {
+            const botMessages = document.querySelectorAll('.bot-message .character-avatar');
+            const character = characterDropdown.value;
+            const avatarUrl = characterAvatars[character] || characterAvatars['友好的二次元少女'];
+            
+            botMessages.forEach(avatar => {
+                avatar.src = avatarUrl;
+            });
+            
+            const characterNames = document.querySelectorAll('.bot-message .character-name');
+            characterNames.forEach(name => {
+                name.textContent = character;
+            });
+        });
+    </script>
+</body>
+</html> 
