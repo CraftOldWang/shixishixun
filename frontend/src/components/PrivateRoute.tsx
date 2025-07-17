@@ -1,7 +1,7 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
-// 不进行权限验证， 可以随便跳转网页
+// 开发时不进行权限验证， 可以随便跳转网页
 const IS_DEV_MODE = true;
 
 interface PrivateRouteProps {

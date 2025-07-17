@@ -1,56 +1,8 @@
 import { useState, useEffect } from "react";
 import type { Character, Conversation } from "../types/index";
 import CharacterCard from "../components/CharacterCard";
+import Navbar from "../components/HomePageNavbar";
 
-// 导航栏组件（可以单独拆出去）
-const Navbar = ({
-    username,
-    avatarUrl,
-}: {
-    username: string;
-    avatarUrl?: string;
-}) =>
-{
-    const [showMenu, setShowMenu] = useState(false);
-
-    return (
-        <nav>
-            {/* 左侧导航 */}
-            <div>
-                <button >首页</button>
-                <button>单词本</button>
-                <button>账号管理</button>
-            </div>
-            {/* 右侧用户信息 */}
-            <div>
-                <div
-                    onMouseEnter={() => setShowMenu(true)}
-                    onMouseLeave={() => setShowMenu(false)}
-                >
-                    {avatarUrl && (
-                        <img
-                            src={avatarUrl}
-                            alt="avatar"
-                        />
-                    )}
-                    <span>{username}</span>
-                </div>
-                {/* 悬浮菜单 */}
-                {showMenu && (
-                    <div>
-                        <button
-                            onClick={() => {
-                                /* TODO: 跳转到账户管理 */
-                            }}
-                        >
-                            账户管理
-                        </button>
-                    </div>
-                )}
-            </div>
-        </nav>
-    );
-}
 
 const HomePage = () => {
     // 默认角色、自定义角色、弹窗相关状态
