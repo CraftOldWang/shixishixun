@@ -10,7 +10,7 @@ interface CharacterCardProps {
 const CharacterCard: React.FC<CharacterCardProps> = ({
     character,
     onClick,
-    highlightColor,
+    highlightColor, // 因为去掉了样式，姑且没用到
 }) => (
     <div onClick={() => onClick(character)}>
         {character.avatar && (

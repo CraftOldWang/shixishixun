@@ -1,6 +1,8 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import type { User } from "../types/index";
 
+//TODO 改成JWT 之后， 不能用这一套了。
+
 // 定义 AuthContext 的类型
 interface AuthContextType {
     user: User | null;
@@ -31,8 +33,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const mockUser: User = {
         id: "1",
         username: username,
-        email: "test123@qq.com";
-        createdAt: new Date().toISOString(),
       };
       setUser(mockUser);
       // 可以保存到 localStorage

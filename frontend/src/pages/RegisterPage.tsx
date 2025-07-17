@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 const RegisterPage = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -36,16 +35,6 @@ const RegisterPage = () => {
                         type="text"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
-                        required
-                        disabled={isLoading}
-                    />
-                </div>
-                <div>
-                    <label>邮箱</label>
-                    <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
                         required
                         disabled={isLoading}
                     />

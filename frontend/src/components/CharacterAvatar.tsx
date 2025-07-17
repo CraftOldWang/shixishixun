@@ -16,7 +16,9 @@ const CharacterAvatar: React.FC<CharacterAvatarProps> = ({ character }) => {
         alt={character.name}
       />
       <div>
-        <h2>{character.name}</h2>
+        {/* 貌似是ChatPage用的，应该不需要名字吧...或者在角落? */}
+        <h2>{character.name}</h2> 
+
       </div>
     </div>
   );

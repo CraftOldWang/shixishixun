@@ -3,6 +3,8 @@ import { useParams } from 'react-router-dom';
 import type{ Conversation, Message, Character } from '../types';
 import { getConversation, sendMessage, generateOptions, createConversation, getCharacters } from '../services/conversationService';
 
+
+//TODO 需要修改
 interface UseConversationReturn {
   conversation: Conversation | null;
   character: Character | null;

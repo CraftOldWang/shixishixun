@@ -3,39 +3,27 @@ import type { Character, Conversation } from "../types/index";
 import CharacterCard from "../components/CharacterCard";
 
 // 导航栏组件（可以单独拆出去）
-function Navbar({
+const Navbar = ({
     username,
     avatarUrl,
 }: {
     username: string;
     avatarUrl?: string;
-}) {
+}) =>
+{
     const [showMenu, setShowMenu] = useState(false);
 
     return (
-        <nav
-            style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                padding: "8px 16px",
-                borderBottom: "1px solid #eee",
-            }}
-        >
+        <nav>
             {/* 左侧导航 */}
             <div>
-                <button>首页</button>
+                <button >首页</button>
                 <button>单词本</button>
                 <button>账号管理</button>
             </div>
             {/* 右侧用户信息 */}
-            <div style={{ position: "relative" }}>
+            <div>
                 <div
-                    style={{
-                        display: "flex",
-                        alignItems: "center",
-                        cursor: "pointer",
-                    }}
                     onMouseEnter={() => setShowMenu(true)}
                     onMouseLeave={() => setShowMenu(false)}
                 >
@@ -43,30 +31,13 @@ function Navbar({
                         <img
                             src={avatarUrl}
                             alt="avatar"
-                            style={{
-                                width: 32,
-                                height: 32,
-                                borderRadius: "50%",
-                                marginRight: 8,
-                            }}
                         />
                     )}
                     <span>{username}</span>
                 </div>
                 {/* 悬浮菜单 */}
                 {showMenu && (
-                    <div
-                        style={{
-                            position: "absolute",
-                            right: 0,
-                            top: "100%",
-                            background: "#fff",
-                            border: "1px solid #eee",
-                            boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-                            padding: "8px 16px",
-                            zIndex: 10,
-                        }}
-                    >
+                    <div>
                         <button
                             onClick={() => {
                                 /* TODO: 跳转到账户管理 */
@@ -108,6 +79,8 @@ const HomePage = () => {
                 name: "小明",
                 description: "热心的学习助手",
                 avatar: "https://randomuser.me/api/portraits/men/1.jpg",
+                isDefault: true,
+                createdBy: "1",
                 tags: ["默认", "AI", "幽默"],
             },
             {
@@ -115,6 +88,8 @@ const HomePage = () => {
                 name: "小红",
                 description: "善于讲故事的AI",
                 avatar: "https://randomuser.me/api/portraits/women/2.jpg",
+                isDefault: true,
+                createdBy: "1",
                 tags: ["默认", "故事", "温柔"],
             },
         ]);
@@ -128,6 +103,8 @@ const HomePage = () => {
                 name: "自定义角色A",
                 description: "你自己创建的角色",
                 avatar: "",
+                isDefault: false,
+                createdBy: "2",
                 tags: ["自定义", "测试"],
             },
         ]);
@@ -156,7 +133,7 @@ const HomePage = () => {
             {/* 默认角色区块 */}
             <section>
                 <h2>默认角色</h2>
-                <div className="flex gap-4 flex-wrap">
+                <div>
                     {defaultCharacters.map((char) => (
                         <CharacterCard
                             key={char.id}
@@ -175,32 +152,11 @@ const HomePage = () => {
                     onClick={() => {
                         // TODO: 打开创建角色弹窗或跳转
                     }}
-                    style={{
-                        border: "2px dashed #a5b4fc",
-                        borderRadius: "12px",
-                        height: "320px",
-                        width: "140px",
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        cursor: "pointer",
-                        background: "#f3f4f6",
-                        marginRight: "16px",
-                    }}
                 >
-                    <div style={{ fontSize: "48px", color: "#6366f1" }}>+</div>
-                    <div
-                        style={{
-                            fontWeight: "bold",
-                            color: "#6366f1",
-                            marginTop: "8px",
-                        }}
-                    >
-                        创建自定义角色
-                    </div>
+                    <div>+</div>
+                    <div>创建自定义角色</div>
                 </div>
-                <div className="flex gap-4 flex-wrap">
+                <div>
                     {customCharacters.map((char) => (
                         <CharacterCard
                             key={char.id}
@@ -213,93 +169,34 @@ const HomePage = () => {
             </section>
 
             {showDialog && selectedCharacter && (
-                <div
-                    style={{
-                        position: "fixed",
-                        top: "50%",
-                        left: "50%",
-                        transform: "translate(-50%, -50%)",
-                        background: "#fff",
-                        border: "1px solid #eee",
-                        borderRadius: "8px",
-                        boxShadow: "0 4px 24px rgba(0,0,0,0.12)",
-                        padding: "24px",
-                        zIndex: 100,
-                        minWidth: "340px",
-                        maxWidth: "90vw",
-                    }}
-                >
-                    <div
-                        style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                        }}
-                    >
+                <div>
+                    <div>
                         <h3>{selectedCharacter.name} 的历史对话</h3>
                         <button onClick={handleCloseDialog}>关闭</button>
                     </div>
-                    <div style={{ margin: "16px 0" }}>
+                    <div>
                         <button
                             onClick={() => {
                                 // TODO: 开启新对话
-                            }}
-                            style={{
-                                background: "#3b82f6",
-                                color: "#fff",
-                                border: "none",
-                                borderRadius: "4px",
-                                padding: "8px 16px",
-                                cursor: "pointer",
                             }}
                         >
                             开启新对话
                         </button>
                     </div>
-                    <div
-                        style={{
-                            maxHeight: "300px",
-                            overflowY: "auto",
-                            borderTop: "1px solid #eee",
-                            paddingTop: "12px",
-                        }}
-                    >
+                    <div>
                         {conversations.length === 0 ? (
-                            <div style={{ color: "#888", textAlign: "center" }}>
-                                暂无历史记录
-                            </div>
+                            <div>暂无历史记录</div>
                         ) : (
                             conversations.map((conv) => (
                                 <div
                                     key={conv.id}
-                                    style={{
-                                        borderBottom: "1px solid #f3f4f6",
-                                        padding: "8px 0",
-                                        cursor: "pointer",
-                                    }}
                                     onClick={() => {
                                         // TODO: 继续对话（跳转或弹窗）
                                     }}
                                 >
-                                    <div style={{ fontWeight: "bold" }}>
-                                        {conv.title}
-                                    </div>
-                                    <div
-                                        style={{
-                                            fontSize: "12px",
-                                            color: "#555",
-                                        }}
-                                    >
-                                        话题：{conv.topic || "无"}
-                                    </div>
-                                    <div
-                                        style={{
-                                            fontSize: "12px",
-                                            color: "#888",
-                                        }}
-                                    >
-                                        摘要：{conv.summary || "无"}
-                                    </div>
+                                    <div>{conv.title}</div>
+                                    <div>话题：{conv.topic || "无"}</div>
+                                    <div>摘要：{conv.summary || "无"}</div>
                                 </div>
                             ))
                         )}
