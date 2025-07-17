@@ -7,7 +7,6 @@ import ChatInput from "../components/ChatInput";
 import ChatOptions from "../components/ChatOptions";
 import ConversationHistory from "../components/ConversationHistory";
 import CharacterAvatar from "../components/CharacterAvatar";
-import backgroundImage from "../assets/background.svg";
 import defaultCharacterImage from "../assets/default-character.svg";
 
 const ChatPage: React.FC = () => {
@@ -63,14 +62,7 @@ const ChatPage: React.FC = () => {
     };
 
     return (
-        <div
-            className="relative min-h-screen flex flex-col"
-            style={{
-                backgroundImage: `url(${backgroundImage})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-            }}
-        >
+        <div>
             {/* 历史记录侧边栏 */}
             {showHistory && conversation && character && (
                 <ConversationHistory
@@ -79,11 +71,13 @@ const ChatPage: React.FC = () => {
                     onClose={toggleHistory}
                 />
             )}
-
             {/* 主内容区 */}
-            <div className="flex-1 flex">
+            
+
+            {/* 左侧 */}
+            <div>
                 {/* 角色区域 - 左侧 */}
-                <div className="w-1/3 h-screen flex items-center justify-center p-4">
+                <div>
                     {character ? (
                         <CharacterAvatar character={character} />
                     ) : (
@@ -92,18 +86,11 @@ const ChatPage: React.FC = () => {
                 </div>
 
                 {/* 对话区域 - 右侧 */}
-                <div className="w-2/3 flex flex-col p-6">
-                    {/* 历史记录按钮 */}
-                    <button
-                        onClick={toggleHistory}
-                        className="absolute top-4 left-4 bg-black bg-opacity-60 backdrop-blur-md text-white p-2 rounded-full z-10"
-                    >
+                <div>
+                    <button onClick={toggleHistory}>
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
-                            className="h-6 w-6"
-                            fill="none"
                             viewBox="0 0 24 24"
-                            stroke="currentColor"
                         >
                             <path
                                 strokeLinecap="round"
@@ -116,8 +103,8 @@ const ChatPage: React.FC = () => {
 
                     {/* 加载状态 */}
                     {loading && (
-                        <div className="flex-1 flex items-center justify-center">
-                            <div className="bg-black bg-opacity-60 backdrop-blur-md text-white p-4 rounded-lg">
+                        <div>
+                            <div>
                                 <p>加载中...</p>
                             </div>
                         </div>
@@ -125,15 +112,10 @@ const ChatPage: React.FC = () => {
 
                     {/* 错误状态 */}
                     {error && (
-                        <div className="flex-1 flex items-center justify-center">
-                            <div className="bg-black bg-opacity-60 backdrop-blur-md text-white p-4 rounded-lg">
-                                <p className="text-red-500">{error}</p>
-                                <button
-                                    onClick={() => navigate("/")}
-                                    className="mt-2 bg-blue-500 text-white px-4 py-2 rounded-lg"
-                                >
-                                    返回首页
-                                </button>
+                        <div>
+                            <div>
+                                <p></p>
+                                <button onClick={() => navigate("/")}>返回首页</button>
                             </div>
                         </div>
                     )}
@@ -141,35 +123,37 @@ const ChatPage: React.FC = () => {
                     {/* 对话内容 */}
                     {!loading && !error && (
                         <>
-                            <div className="flex-1 overflow-y-auto mb-4 pr-4 space-y-4">
-                                {messages.length === 0 ? (
-                                    <div className="flex items-center justify-center h-full">
-                                        <div className="bg-black bg-opacity-60 backdrop-blur-md text-white p-6 rounded-lg max-w-md text-center">
-                                            <h2 className="text-xl font-bold mb-2">
-                                                开始与
-                                                {character?.name || "语言助手"}
-                                                对话
-                                            </h2>
-                                            <p>
-                                                选择下方的选项或输入你想说的话开始对话
-                                            </p>
+                            <div>
+                                <div>
+                                    {messages.length === 0 ? (
+                                        <div>
+                                            <div>
+                                                <h2>
+                                                    开始与
+                                                    {character?.name || "语言助手"}
+                                                    对话
+                                                </h2>
+                                                <p>
+                                                    选择下方的选项或输入你想说的话开始对话
+                                                </p>
+                                            </div>
                                         </div>
-                                    </div>
-                                ) : (
-                                    messages.map((message) => (
-                                        <MessageBubble
-                                            key={message.id}
-                                            message={message}
-                                            conversationId={
-                                                conversation?.id || ""
-                                            }
-                                        />
-                                    ))
-                                )}
+                                    ) : (
+                                        messages.map((message) => (
+                                            <MessageBubble
+                                                key={message.id}
+                                                message={message}
+                                                conversationId={
+                                                    conversation?.id || ""
+                                                }
+                                            />
+                                        ))
+                                    )}
+                                </div>
                             </div>
 
                             {/* 选项区域 */}
-                            <div className="mb-4">
+                            <div>
                                 <ChatOptions
                                     options={options}
                                     onSelectOption={handleOptionSelect}
@@ -178,7 +162,7 @@ const ChatPage: React.FC = () => {
                             </div>
 
                             {/* 输入区域 */}
-                            <div className="mt-auto">
+                            <div>
                                 <ChatInput
                                     onSendMessage={handleSendMessage}
                                     disabled={loading}

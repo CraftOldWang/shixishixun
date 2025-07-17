@@ -12,69 +12,16 @@ const CharacterCard: React.FC<CharacterCardProps> = ({
     onClick,
     highlightColor,
 }) => (
-    <div
-        onClick={() => onClick(character)}
-        style={{
-            border: "1px solid #eee",
-            borderRadius: "12px",
-            height: "320px",
-            width: "140px",
-            cursor: "pointer",
-            background: highlightColor || "#f0fdf4",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            padding: "16px",
-            marginRight: "16px",
-        }}
-    >
+    <div onClick={() => onClick(character)}>
         {character.avatar && (
-            <img
-                src={character.avatar}
-                alt={character.name}
-                style={{
-                    width: "80px",
-                    height: "80px",
-                    objectFit: "cover",
-                    borderRadius: "50%",
-                    marginBottom: "8px",
-                }}
-            />
+            <img src={character.avatar} alt={character.name} />
         )}
-        <h3 style={{ fontSize: "16px", fontWeight: "bold", color: "#6366f1" }}>
-            {character.name}
-        </h3>
-        <p
-            style={{
-                fontSize: "12px",
-                color: "#666",
-                textAlign: "center",
-                margin: "8px 0",
-            }}
-        >
-            {character.description}
-        </p>
-        <div
-            style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: "4px",
-                justifyContent: "center",
-            }}
-        >
+        <h3>{character.name}</h3>
+        <p>{character.description}</p>
+        <div>
             {character.tags &&
                 character.tags.map((t, idx) => (
-                    <span
-                        key={idx}
-                        style={{
-                            fontSize: "10px",
-                            background: "#bbf7d0",
-                            borderRadius: "4px",
-                            padding: "2px 6px",
-                        }}
-                    >
-                        {t}
-                    </span>
+                    <span key={idx}>{t}</span>
                 ))}
         </div>
     </div>

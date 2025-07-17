@@ -12,7 +12,7 @@ function PrivateRoute({ children }: PrivateRouteProps) {
   const { user, isLoading } = useAuth();
 
   if (isLoading) {
-    return <div className="flex justify-center items-center h-screen">加载中...</div>;
+    return <div>加载中...</div>;
   }
 
   if (IS_DEV_MODE) {
@@ -20,7 +20,6 @@ function PrivateRoute({ children }: PrivateRouteProps) {
   }else {
     return user ? <>{children}</> : <Navigate to="/login" />;
   }
-
 }
 
 export default PrivateRoute;
