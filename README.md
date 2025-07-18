@@ -94,11 +94,17 @@ uvicorn main:app --reload
 
 ### 2. 启动前端服务
 
-```bash
-python frontend/serve.py
+需要有nodejs 和 npm
+``` bash
+cd frontend
+# 安装依赖
+npm install
+# 启动服务器
+npm run dev 
 ```
 
-前端将在 http://localhost:8080 上运行
+
+前端将在 http://localhost:5173/ 上运行
 
 ## API接口说明
 
