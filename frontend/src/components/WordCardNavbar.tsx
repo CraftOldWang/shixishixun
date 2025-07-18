@@ -2,74 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { User } from "../types/index";
 
-// 导航栏组件
-// const Navbar = ({
-//     username,
-//     avatarUrl,
-// }: {
-//     username: string;
-//     avatarUrl?: string;
-// }) => {
-//     const [showMenu, setShowMenu] = useState(false);
-//     const navigate = useNavigate();
-
-//     return (
-//         <nav className="flex justify-between items-center bg-white px-6 py-3 shadow-md">
-//             {/* 左侧导航 */}
-//             <div className="flex space-x-4">
-//                 <button
-//                     className="text-gray-700 hover:text-blue-600 font-medium"
-//                     onClick={() => navigate("/")}
-//                 >
-//                     首页
-//                 </button>
-//                 <button
-//                     className="text-gray-700 hover:text-blue-600 font-medium"
-//                     onClick={() => navigate("/wordbook")}
-//                 >
-//                     单词本
-//                 </button>
-//             </div>
-
-//             {/* 右侧用户信息 */}
-//             <div
-//                 className="relative"
-//                 onMouseEnter={() => setShowMenu(true)}
-//                 onMouseLeave={() => setShowMenu(false)}
-//             >
-//                 <div className="flex items-center space-x-2 cursor-pointer">
-//                     {avatarUrl && (
-//                         <img
-//                             src={avatarUrl}
-//                             alt="avatar"
-//                             className="w-8 h-8 rounded-full"
-//                         />
-//                     )}
-//                     <span className="text-gray-800 font-semibold">
-//                         {username}
-//                     </span>
-//                 </div>
-
-//     {/* 悬浮菜单 */}
-//     {showMenu && (
-//         <div className="absolute right-0 mt-2 w-40 bg-white border rounded-md shadow-lg z-10">
-//             <button
-//                 className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-gray-700"
-//                 onClick={() => navigate("/profile")}
-//             >
-//                 账户管理
-//             </button>
-//         </div>
-//     )}
-// </div>
-//         </nav>
-//     );
-// };
-
-// import React, { useState } from 'react';
-
-// 定义 NavBar 组件，并接收 currentUser 和 onLogout 作为 props
-
 interface NavBarProps {
     currentUser: User;
     onLogout: () => void;
@@ -104,14 +36,14 @@ const NavBar: React.FC<NavBarProps> = ({ currentUser, onLogout }) => {
                         <button
                             type="button"
                             onClick={() => navigate("/")}
-                            className="text-blue-600 font-semibold border-b-2 border-blue-600 pb-1"
+                            className="text-gray-600 hover:text-blue-600 transition-colors"
                         >
                             首页
                         </button>
                         <button
                             type="button"
                             onClick={() => navigate("/wordbook")}
-                            className="text-gray-600 hover:text-blue-600 transition-colors"
+                            className="text-blue-600 font-semibold border-b-2 border-blue-600 pb-1"
                         >
                             单词本
                         </button>
@@ -169,4 +101,3 @@ const NavBar: React.FC<NavBarProps> = ({ currentUser, onLogout }) => {
 };
 
 export default NavBar;
-

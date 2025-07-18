@@ -36,7 +36,7 @@ export interface Conversation {
   messages?: Message[]; // 暂时选填， 也许有了更方便？ 所有消息保存在会话下，也更合理， 
   // 但是 数据库不能存数组。
   //TODO 如果背景要AI生成的话，这样可以每个对话都不同背景。
-  backgroundUrl:string; 
+  backgroundUrl?:string; 
 }
 
 // 单词卡类型
@@ -44,7 +44,8 @@ export interface WordCard {
   id: string;
   userId: string;
   word: string; 
-  definition?: string;   // 这是什么？
+  pronunciation?: string;   // 这是什么？
+  pos?: string;
   context?: string;
   conversationId: string; //TODO ， 到底要什么字段
   messageId?: string;   // 有这个应该就不需要conversationId了吧，或者多存一个方便使用。？
