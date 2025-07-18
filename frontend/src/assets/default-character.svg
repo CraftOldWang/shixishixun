@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="500" viewBox="0 0 300 500">
+  <!-- Background -->
+  <rect width="300" height="500" fill="#1e293b" />
+  
+  <!-- Character silhouette -->
+  <g transform="translate(150, 250)">
+    <!-- Head -->
+    <circle cx="0" cy="-100" r="50" fill="#3b82f6" />
+    
+    <!-- Body -->
+    <path d="M-40,-50 Q-30,50 -50,150 L50,150 Q30,50 40,-50 Z" fill="#3b82f6" />
+    
+    <!-- Arms -->
+    <path d="M-40,-30 Q-80,50 -90,100" stroke="#3b82f6" stroke-width="20" fill="none" />
+    <path d="M40,-30 Q80,50 90,100" stroke="#3b82f6" stroke-width="20" fill="none" />
+    
+    <!-- Face (simplified) -->
+    <circle cx="-15" cy="-110" r="5" fill="#fff" />
+    <circle cx="15" cy="-110" r="5" fill="#fff" />
+    <path d="M-10,-85 Q0,-75 10,-85" stroke="#fff" stroke-width="3" fill="none" />
+  </g>
+  
+  <!-- Decorative elements -->
+  <g opacity="0.2">
+    <circle cx="50" cy="50" r="20" fill="#fff" />
+    <circle cx="250" cy="50" r="15" fill="#fff" />
+    <circle cx="50" cy="450" r="25" fill="#fff" />
+    <circle cx="250" cy="450" r="10" fill="#fff" />
+  </g>
+  
+  <!-- Subtle pattern -->
+  <g stroke="#fff" stroke-width="0.5" opacity="0.1">
+    <line x1="0" y1="100" x2="300" y2="100" />
+    <line x1="0" y1="200" x2="300" y2="200" />
+    <line x1="0" y1="300" x2="300" y2="300" />
+    <line x1="0" y1="400" x2="300" y2="400" />
+    
+    <line x1="100" y1="0" x2="100" y2="500" />
+    <line x1="200" y1="0" x2="200" y2="500" />
+  </g>
+</svg>
