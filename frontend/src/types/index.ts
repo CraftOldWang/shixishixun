@@ -35,6 +35,8 @@ export interface Conversation {
   updatedAt: string; //最后进入时间
   messages?: Message[]; // 暂时选填， 也许有了更方便？ 所有消息保存在会话下，也更合理， 
   // 但是 数据库不能存数组。
+  //TODO 如果背景要AI生成的话，这样可以每个对话都不同背景。
+  backgroundUrl:string; 
 }
 
 // 单词卡类型
