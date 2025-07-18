@@ -2,6 +2,7 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 // 开发时不进行权限验证， 可以随便跳转网页
+// 如果用JWT， 应该需要进行改动。
 const IS_DEV_MODE = true;
 
 interface PrivateRouteProps {
@@ -9,7 +10,7 @@ interface PrivateRouteProps {
 }
 
 function PrivateRoute({ children }: PrivateRouteProps) {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading } = useAuth();//TODO Auth要改成JWT， 这里也要。
 
   if (isLoading) {
     return <div>加载中...</div>;
