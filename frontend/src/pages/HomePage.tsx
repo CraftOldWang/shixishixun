@@ -194,12 +194,6 @@ const HomePage = () => {
                                 {/* // 使用 lucide-react 图标库 */}
                                 <X className="w-7 h-7" />
                             </button>
-                            {/* <button
-                                onClick={handleCloseDialog}
-                                className="text-gray-400 hover:text-gray-600"
-                            >
-                                ❌
-                            </button> */}
                         </div>
                         <div className="p-6">
                             <button
