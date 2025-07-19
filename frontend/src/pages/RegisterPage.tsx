@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { registerUser } from "../services/authService";
 
 const RegisterPage = () => {
     const [username, setUsername] = useState("");
@@ -14,12 +15,15 @@ const RegisterPage = () => {
         setIsLoading(true);
 
         try {
-            // TODO: 替换为真实注册API
-            await new Promise((res) => setTimeout(res, 1000)); // 模拟网络延迟
-            // 注册成功后跳转到登录页
+            // 调用真实注册接口
+            const result = await registerUser(username, password);
+            console.log(result); // 打印调试...
+
+            // 注册成功后跳转登录页
             navigate("/login");
-        } catch (err) {
-            setError("注册失败，请重试。");
+        } catch (err: any) {
+            // 你可以根据后端返回的错误，做更细致的提示
+            setError(err.response?.data?.message || "注册失败，请重试。");
         } finally {
             setIsLoading(false);
         }
@@ -29,7 +33,7 @@ const RegisterPage = () => {
         // 1. 整体页面容器
         // - 使用与登录页完全相同的样式，确保视觉一致性
         <div
-            className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 p-4"
+            className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-300 via-purple-100 to-pink-200 p-4"
             // 【背景图片】如果你想添加背景图片，可以取消下面的 style 注释，并换上你的图片URL
             // style={{
             //   backgroundImage: `url('你的背景图片URL')`,

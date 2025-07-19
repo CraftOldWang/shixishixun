@@ -329,36 +329,38 @@ const CurrentReplyPanel: React.FC<{
     return (
         <div className="w-full h-full p-6 flex flex-col justify-center">
             <div>
-            <h2 className="text-xl font-bold text-white mb-4 border-b border-gray-500 pb-2">
-                当前回复
-            </h2>
-            {message ? (
-                <div className="bg-gray-700 bg-opacity-50 p-6 rounded-2xl shadow-lg">
-                    <p className="text-2xl text-white leading-relaxed">
-                        {message.content.split(/(\s+)/).map((word, index) => (
-                            <span
-                                key={index}
-                                className="cursor-pointer hover:bg-yellow-400 hover:text-black rounded"
-                                onMouseEnter={handleWordHover}
-                                onMouseLeave={onWordMouseLeave}
-                            >
-                                {word}
-                            </span>
-                        ))}
-                    </p>
-                    <button
-                        onClick={() => handleTTS(message.content)}
-                        className="text-gray-300 hover:text-white mt-4 flex items-center gap-2"
-                    >
-                        <Volume2 size={20} /> 朗读
-                    </button>
-                </div>
-            ) : (
-                <div className="text-center text-gray-400">
-                    <MessageSquare size={48} className="mx-auto" />
-                    <p className="mt-4">正在等待角色的回复...</p>
-                </div>
-            )}
+                <h2 className="text-xl font-bold text-white mb-4 border-b border-gray-500 pb-2">
+                    当前回复
+                </h2>
+                {message ? (
+                    <div className="bg-gray-700 bg-opacity-50 p-6 rounded-2xl shadow-lg">
+                        <p className="text-2xl text-white leading-relaxed">
+                            {message.content
+                                .split(/(\s+)/)
+                                .map((word, index) => (
+                                    <span
+                                        key={index}
+                                        className="cursor-pointer hover:bg-yellow-400 hover:text-black rounded"
+                                        onMouseEnter={handleWordHover}
+                                        onMouseLeave={onWordMouseLeave}
+                                    >
+                                        {word}
+                                    </span>
+                                ))}
+                        </p>
+                        <button
+                            onClick={() => handleTTS(message.content)}
+                            className="text-gray-300 hover:text-white mt-4 flex items-center gap-2"
+                        >
+                            <Volume2 size={20} /> 朗读
+                        </button>
+                    </div>
+                ) : (
+                    <div className="text-center text-gray-400">
+                        <MessageSquare size={48} className="mx-auto" />
+                        <p className="mt-4">正在等待角色的回复...</p>
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -372,7 +374,7 @@ export default function ChatPage() {
     const [currentCharacterReply, setCurrentCharacterReply] =
         useState<Message | null>(null);
     const [inputValue, setInputValue] = useState("");
-    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
 
     // 悬浮窗状态管理
     const [popupInfo, setPopupInfo] = useState<{
@@ -428,7 +430,6 @@ export default function ChatPage() {
 
     return (
         <div className="h-screen w-screen bg-gray-900 font-sans text-white flex relative overflow-hidden">
-
             {/* //TODO 此外侧边栏貌似不够大....以及这里用亚克力的话，显示效果似乎不太好 */}
             {/* 侧边栏 */}
             {/* --- part1折叠时显示浮动按钮 --- */}
@@ -455,7 +456,7 @@ export default function ChatPage() {
                 </div>
             )}
             {/* //TODO下面这个有动画效果， 但是收缩回去之后，不能隐藏。 想把动画效果融入到上面在使用的侧边栏。 */}
-            {/*  可伸缩侧边栏 */} 
+            {/*  可伸缩侧边栏 */}
             {/* <div
                 className={`fixed top-0 left-0 h-full w-[300px] bg-gray-800 shadow-lg z-50 transform transition-transform duration-300 ${
                     isSidebarCollapsed ? "-translate-x-full" : "translate-x-0"
@@ -469,8 +470,6 @@ export default function ChatPage() {
                     onWordMouseLeave={handleMouseLeave}
                 />
             </div>  */}
-
-
 
             {/* 主内容区 */}
             <main className="flex-1 flex flex-col relative h-screen">

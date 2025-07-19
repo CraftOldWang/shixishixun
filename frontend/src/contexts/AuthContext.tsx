@@ -1,87 +1,119 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import {
+    createContext,
+    useContext,
+    useState,
+    useEffect,
+    type ReactNode,
+} from "react";
 import type { User } from "../types/index";
+import apiClient from "../services/api"; // 从新文件中导入
+import { loginUser, getMe } from "../services/authService";
 
-//TODO 改成JWT 之后， 不能用这一套了。
-
-// 定义 AuthContext 的类型
+// --- 类型定义 ---
 interface AuthContextType {
     user: User | null;
-    login: (username: string, password: string) =>Promise<void>;
+    login: (username: string, password: string) => Promise<void>;
     logout: () => void;
-    isLoading: boolean; // 这个是做什么用的？
+    isLoading: boolean;
 }
 
-// 创建 Context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// AuthProvider 组件的 props 类型
 interface AuthProviderProps {
-    children: React.ReactNode;
+    children: ReactNode;
 }
 
-// AuthProvider 组件
+// --- AuthProvider 组件 ---
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [user, setUser] = useState<User | null>(null);
+    // isLoading 初始为 true，因为我们首先要检查本地 token，这是一个异步过程
+    const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // 登录函数
-  const login = async (username: string, password: string) => {
-    setIsLoading(true);
-    try {
-      // 这里先用模拟数据，后续会连接真实API
-      // TODO: 替换为真实的API调用
-      const mockUser: User = {
-        id: "1",
-        username: username,
-      };
-      setUser(mockUser);
-      // 可以保存到 localStorage
-      localStorage.setItem('user', JSON.stringify(mockUser));
-    } catch (error) {
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    // --- 核心改动：组件挂载时，检查并验证存储的 Token ---
+    useEffect(() => {
+        const checkAuthStatus = async () => {
+            const token = localStorage.getItem("accessToken");
+            if (token) {
+                try {
+                    // 关键步骤：将 token 设置到 axios 的默认请求头中
+                    apiClient.defaults.headers.common[
+                        "Authorization"
+                    ] = `Bearer ${token}`;
+                    //请求头中的键值对   "Authorization": `Bearer ${token}`
 
-  // 注销函数
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('user');
-  };
+                    // 向后端发送请求，验证 token 的有效性，并获取用户信息
+                    setUser(await getMe());
+                } catch (error) {
+                    // 如果 token 无效或过期，后端会返回 401 错误
+                    // 清理无效的 token
+                    console.error("Token validation failed:", error);
+                    logout(); // 使用 logout 函数来清理状态
+                }
+            }
+            // 无论有无 token，检查过程都已完成
+            setIsLoading(false);
+        };
 
-  // 组件挂载时检查本地存储
-  useEffect(() => {
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
-    setIsLoading(false);
-  }, []);
+        checkAuthStatus();
+    }, []); // 空依赖数组确保此 effect 只在组件挂载时运行一次
 
-  const value = {
-    user,
-    login,
-    logout,
-    isLoading,
-  };
+    // --- 核心改动：实现真实的登录函数 ---
+    const login = async (username: string, password: string) => {
+        setIsLoading(true);
+        try {
+            // 1-2 尝试登录
+            const { access_token } = await loginUser(username, password);
 
-  //提供 context 的实际值（实现 + 分发）
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+            // 3. 存储 token 到 localStorage
+            localStorage.setItem("accessToken", access_token);
+
+            // 4. 更新 axios 实例的默认请求头，用于后续所有请求
+            apiClient.defaults.headers.common[
+                "Authorization"
+            ] = `Bearer ${access_token}`;
+
+            // 5. 获取并设置用户信息
+            setUser(await getMe());
+        } catch (error) {
+            // 登录失败，确保清理任何可能残留的状态
+            logout();
+            // 将错误向上抛出，以便登录页面可以捕获并显示错误信息
+            // 登录页有进行处理， 所以是ok的
+            throw error;
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // --- 核心改动：更新注销函数 ---
+    const logout = () => {
+        setUser(null);
+        // 移除 token 而不是 user 对象
+        localStorage.removeItem("accessToken");
+        // 从 axios 实例中移除 Authorization 头
+        delete apiClient.defaults.headers.common["Authorization"];
+    };
+
+    const value = {
+        user,
+        login,
+        logout,
+        isLoading,
+    };
+
+    return (
+        <AuthContext.Provider value={value}>
+            {/* 只有在初始加载完成后才渲染子组件，防止页面闪烁 */}
+            {!isLoading && children}
+        </AuthContext.Provider>
+    );
 }
 
-// 自定义 hook 用于使用 AuthContext
+// --- 自定义 Hook (无需改动) ---
 export function useAuth() {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
+    const context = useContext(AuthContext);
+    if (context === undefined) {
+        throw new Error("useAuth must be used within an AuthProvider");
+    }
+    return context;
 }
-
-// 只需要 这样就可以在别的地方使用这些(相当于全局变量的)东西(用户信息、登录、注销、加载状态等)
-// const { user, login, logout, isLoading } = useAuth();

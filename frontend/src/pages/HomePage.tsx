@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import type { Character, Conversation, User } from "../types/index";
 import CharacterCard from "../components/CharacterCard";
 import AddCharacterCard from "../components/AddCharacterCard";
-import HistoryDialog from "../components/HistoryDialog"
+import HistoryDialog from "../components/HistoryDialog";
 import Navbar from "../components/HomePageNavbar";
 import { useNavigate } from "react-router-dom";
 import { Settings, X } from "lucide-react"; // 举例：使用 lucide-react 图标库
@@ -81,8 +81,6 @@ const HomePage = () => {
             },
         ]);
     }, []);
-
-
 
     // --- 初次加载时运行 ---
     //TODO 需要根据后端API制作。
@@ -165,12 +163,11 @@ const HomePage = () => {
             {/* 历史对话框 */}
             {showDialog && selectedCharacter && (
                 <HistoryDialog
-                character={selectedCharacter}
-                onClose={handleCloseDialog}
-                onStartNewConversation={handleStartNewConversation}
+                    character={selectedCharacter}
+                    onClose={handleCloseDialog}
+                    onStartNewConversation={handleStartNewConversation}
                 />
             )}
-
         </div>
     );
 };

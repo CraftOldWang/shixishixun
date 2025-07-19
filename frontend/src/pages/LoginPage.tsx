@@ -29,10 +29,11 @@ const LoginPage = () => {
         // 1. 整体页面容器
         // - min-h-screen: 确保容器至少占满整个屏幕的高度
         // - flex items-center justify-center: 使用 Flexbox 实现内容垂直和水平居中
+        // TODO 渐变效果真好看， 感觉在别的地方也能用
         // - bg-gradient-to-br from-gray-100 to-gray-200: 设置了一个优雅的从左上到右下的渐变背景
         // - p-4: 在小屏幕上提供一些边距，防止内容贴边
         <div
-            className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 p-4"
+            className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-300 via-purple-100 to-pink-200 p-4"
             // 【背景图片】如果你想添加背景图片，可以取消下面的 style 注释，并换上你的图片URL
             // style={{
             //   backgroundImage: `url('你的背景图片URL')`,
@@ -115,7 +116,6 @@ const LoginPage = () => {
                     </button>
                 </div>
 
-
                 {/* 注册按钮 */}
                 <div className="text-center">
                     {/* 注册按钮 (次要操作，设计成链接样式) */}
@@ -128,7 +128,6 @@ const LoginPage = () => {
                         没有账号？立即注册
                     </button>
                 </div>
-
             </form>
         </div>
     );
