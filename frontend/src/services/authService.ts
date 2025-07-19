@@ -8,6 +8,7 @@ export const registerUser = async (username: string, password: string) => {
     const response = await apiClient.post("/api/auth/register", {
         username: username,
         password: password,
+        email:"hellotest@gmail.com"
     });
     // 你可以根据需要返回后端的数据，或者不返回 (返回成功信息...)
     return response.data;

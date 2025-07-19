@@ -10,7 +10,7 @@ from models.models import User
 from schemas.schemas import UserCreate, UserResponse, Token
 
 router = APIRouter(
-    prefix="/users",
+    prefix="/api/auth",
     tags=["users"],
     responses={404: {"description": "Not found"}},
 )
@@ -37,7 +37,7 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
     db.refresh(db_user)
     return db_user
 
-@router.post("/token", response_model=Token)
+@router.post("/login", response_model=Token)
 def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     """用户登录获取令牌"""
     user = authenticate_user(db, form_data.username, form_data.password)

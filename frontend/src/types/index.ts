@@ -2,6 +2,7 @@
 export interface User { // 前端用不到密码
   id: string;
   username: string;
+  eamil?:string;  // 为了兼容后端，可选是因为其他地方不使用。
 }
 
 // 角色类型
