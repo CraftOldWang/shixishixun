@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import type { Character, Conversation, User } from "../types/index";
 import CharacterCard from "../components/CharacterCard";
 import AddCharacterCard from "../components/AddCharacterCard";
+import HistoryDialog from "../components/HistoryDialog"
 import Navbar from "../components/HomePageNavbar";
 import { useNavigate } from "react-router-dom";
 import { Settings, X } from "lucide-react"; // 举例：使用 lucide-react 图标库
@@ -17,7 +18,6 @@ const HomePage = () => {
 
     const [defaultCharacters, setDefaultCharacters] = useState<Character[]>([]);
     const [customCharacters, setCustomCharacters] = useState<Character[]>([]);
-    const [conversations, setConversations] = useState<Conversation[]>([]);
     const [showDialog, setShowDialog] = useState<boolean>(false);
     const [selectedCharacter, setSelectedCharacter] =
         useState<Character | null>(null);
@@ -82,20 +82,7 @@ const HomePage = () => {
         ]);
     }, []);
 
-    //TODO 会话，应该是根据角色和用户，通过 event handler获取 而不是用useEffect
-    useEffect(() => {
-        setConversations([
-            {
-                id: "conv-1",
-                characterId: "char-3",
-                userId: currentUser.id,
-                title: "本周训练计划",
-                topic: "力量训练",
-                summary: "讨论了周三的腿部训练日强度和注意事项...",
-                updatedAt: "2023-10-27T10:30:00Z",
-            },
-        ]);
-    }, []);
+
 
     // --- 初次加载时运行 ---
     //TODO 需要根据后端API制作。
@@ -108,8 +95,6 @@ const HomePage = () => {
     useEffect(() => {
         // fetchCustomCharacters().then(setCustomCharacters)
     }, []);
-
-
 
     // --- Event Handlers ---
     //TODO 还需要添加拿历史记录并设置的 逻辑
@@ -179,65 +164,13 @@ const HomePage = () => {
 
             {/* 历史对话框 */}
             {showDialog && selectedCharacter && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl transform transition-all">
-                        <div className="p-6 flex justify-between items-center border-b">
-                            <h3 className="text-xl font-bold text-gray-800">
-                                {selectedCharacter.name} 的历史对话
-                            </h3>
-                            <button
-                                onClick={handleCloseDialog}
-                                type="button"
-                                className="text-gray-400 hover:text-gray-800"
-                                aria-label="关闭"
-                            >
-                                {/* // 使用 lucide-react 图标库 */}
-                                <X className="w-7 h-7" />
-                            </button>
-                        </div>
-                        <div className="p-6">
-                            <button
-                                onClick={handleStartNewConversation}
-                                className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors"
-                            >
-                                开启新对话
-                            </button>
-                            <div className="my-6 border-t"></div>
-                            <h4 className="font-semibold text-gray-700 mb-3">
-                                对话记录
-                            </h4>
-                            <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
-                                {conversations.length === 0 ? (
-                                    <div className="text-center text-gray-500 py-8">
-                                        暂无历史记录
-                                    </div>
-                                ) : (
-                                    conversations.map((conv) => (
-                                        <div
-                                            key={conv.id}
-                                            className="p-4 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100"
-                                        >
-                                            <div className="font-semibold text-gray-800">
-                                                {conv.title}
-                                            </div>
-                                            {/* Accessing properties from your Conversation type */}
-                                            <p className="text-sm text-gray-600 mt-1">
-                                                话题：{conv.topic}
-                                            </p>
-                                            <p className="text-sm text-gray-500 mt-1 truncate">
-                                                摘要：{conv.summary}
-                                            </p>
-                                            <p className="text-xs text-gray-400 mt-2">
-                                                最后更新：{conv.updatedAt}
-                                            </p>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <HistoryDialog
+                character={selectedCharacter}
+                onClose={handleCloseDialog}
+                onStartNewConversation={handleStartNewConversation}
+                />
             )}
+
         </div>
     );
 };

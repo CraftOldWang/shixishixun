@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { User } from "../types/index";
-
+import { Settings } from "lucide-react";
 
 interface NavBarProps {
     currentUser: User;
@@ -52,10 +52,12 @@ const NavBar: React.FC<NavBarProps> = ({ currentUser, onLogout }) => {
                 </div>
                 <div className="flex items-center space-x-4">
                     <button
+                        aria-label="setting"
                         type="button"
                         className="text-gray-500 hover:text-gray-800"
                     >
-                        ⚙️
+                        {/* TODO要做这个吗？ */}
+                        <Settings className="w-5 h-5" />
                     </button>
                     <div className="relative group">
                         <button
@@ -72,8 +74,9 @@ const NavBar: React.FC<NavBarProps> = ({ currentUser, onLogout }) => {
                                 className="h-9 w-9 rounded-full object-cover"
                             />
                         </button>
-                        {/* 悬浮菜单 */}
 
+
+                        {/* 悬浮菜单 */}
                         <div
                             className="absolute right-0  w-48 bg-white rounded-md shadow-xl z-50 py-1
                opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 
