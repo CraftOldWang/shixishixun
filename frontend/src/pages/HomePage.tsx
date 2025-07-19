@@ -1,16 +1,15 @@
+// src/pages/HomePage.tsx
 import { useState, useEffect } from "react";
 import type { Character, Conversation, User } from "../types/index";
 import CharacterCard from "../components/CharacterCard";
 import AddCharacterCard from "../components/AddCharacterCard";
 import HistoryDialog from "../components/HistoryDialog";
+import CreateCharacterDialog from "../components/CreateCharacterDialog"; // 导入新组件
 import Navbar from "../components/HomePageNavbar";
 import { useNavigate } from "react-router-dom";
-import { Settings, X } from "lucide-react"; // 举例：使用 lucide-react 图标库
 
 const HomePage = () => {
-    // --- State Management ---
-    // In a real app, this user object would come from context or a hook
-    //TODO 用户信息应该从Authcontext中获取 , 注意jwt?
+    // 状态管理
     const [currentUser, setCurrentUser] = useState<User>({
         id: "user-123",
         username: "Alice",
@@ -18,18 +17,12 @@ const HomePage = () => {
 
     const [defaultCharacters, setDefaultCharacters] = useState<Character[]>([]);
     const [customCharacters, setCustomCharacters] = useState<Character[]>([]);
-    const [showDialog, setShowDialog] = useState<boolean>(false);
-    const [selectedCharacter, setSelectedCharacter] =
-        useState<Character | null>(null);
+    const [showHistoryDialog, setShowHistoryDialog] = useState<boolean>(false);
+    const [showCreateDialog, setShowCreateDialog] = useState<boolean>(false); // 新增状态
+    const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
     const navigate = useNavigate();
 
-    // --- Mock Data (Conforming to your types) ---
-    //TODO 这些都需要通过后端API得到
-    //1.默认角色信息  2. 该用户自定义角色信息  3.某个用户与某个角色的所有 conversation (不包含message)。
-    //还不知道怎么办的逻辑： 1.点击某一条历史会话可以加载，从那里继续对话。 2.如何开启新对话。
-    // 下面这些useEffect 是在组件初次被加载时挂载(不太懂该怎么描述)
-
-    // 默认角色 mock data
+    // 模拟数据
     useEffect(() => {
         setDefaultCharacters([
             {
@@ -67,7 +60,6 @@ const HomePage = () => {
         ]);
     }, []);
 
-    // 自定义角色 mock data
     useEffect(() => {
         setCustomCharacters([
             {
@@ -76,49 +68,47 @@ const HomePage = () => {
                 description: "为我量身定制的健身计划。",
                 avatar: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400",
                 isDefault: false,
-                createdBy: currentUser.id,
+                createdBy: "user-123",
                 tags: ["健康", "运动"],
             },
         ]);
     }, []);
 
-    // --- 初次加载时运行 ---
-    //TODO 需要根据后端API制作。
-    // TODO: 获取默认角色列表
-    useEffect(() => {
-        // fetchDefaultCharacters().then(setDefaultCharacters)
-    }, []);
-
-    // TODO: 获取自定义角色列表
-    useEffect(() => {
-        // fetchCustomCharacters().then(setCustomCharacters)
-    }, []);
-
-    // --- Event Handlers ---
-    //TODO 还需要添加拿历史记录并设置的 逻辑
+    // 事件处理
     const handleCardClick = (character: Character) => {
         setSelectedCharacter(character);
-        setShowDialog(true);
+        setShowHistoryDialog(true);
     };
 
-    const handleCloseDialog = () => {
-        setShowDialog(false);
+    const handleCloseHistoryDialog = () => {
+        setShowHistoryDialog(false);
         setSelectedCharacter(null);
     };
 
-    //TODO 创建自定义角色的页面
+    // 修改：打开创建角色弹窗
     const handleCreateNew = () => {
-        alert("跳转到创建角色页面或打开创建弹窗！");
-        navigate("/create_chara_todo");
+        setShowCreateDialog(true);
+    };
+
+    // 新增：关闭创建角色弹窗
+    const handleCloseCreateDialog = () => {
+        setShowCreateDialog(false);
+    };
+
+    // 新增：创建新角色后的处理
+    const handleCreateCharacter = (newCharacter: Character) => {
+        setCustomCharacters(prev => [...prev, newCharacter]);
+        setShowCreateDialog(false);
     };
 
     const handleLogout = () => {
-        // setCurrentUser(null); //呃，不过没有登录是到不了这个页面的。
         navigate("/login");
     };
 
-    //TODO
-    const handleStartNewConversation = () => {};
+    const handleStartNewConversation = () => {
+        // 实现开启新对话的逻辑
+    };
+
     return (
         <div className="min-h-screen bg-gray-100 flex flex-col">
             {/* 导航栏 */}
@@ -161,11 +151,19 @@ const HomePage = () => {
             </main>
 
             {/* 历史对话框 */}
-            {showDialog && selectedCharacter && (
+            {showHistoryDialog && selectedCharacter && (
                 <HistoryDialog
                     character={selectedCharacter}
-                    onClose={handleCloseDialog}
+                    onClose={handleCloseHistoryDialog}
                     onStartNewConversation={handleStartNewConversation}
+                />
+            )}
+            
+            {/* 新增：创建角色对话框 */}
+            {showCreateDialog && (
+                <CreateCharacterDialog 
+                    onClose={handleCloseCreateDialog}
+                    onCreate={handleCreateCharacter}
                 />
             )}
         </div>

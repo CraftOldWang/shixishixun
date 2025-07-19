@@ -1,29 +1,25 @@
-import React from "react";
-import type { Character } from "../types";
-
-
+// src/components/AddCharacterCard.tsx
+import React, { type FC } from 'react';
 
 interface AddCharacterCardProps {
   onClick: () => void;
 }
 
-// “添加角色”卡片组件的预想设计
-const AddCharacterCard: React.FC<AddCharacterCardProps> = ({ onClick }) => (
-    <div
-        onClick={onClick}
-        className="group bg-white bg-opacity-50 rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 ease-in-out hover:border-blue-500 hover:bg-white hover:shadow-lg min-h-[232px]"
-        // style={{ minHeight: '232px' }} // 与CharacterCard高度保持大致一致 使用min-h-[232px]代替了。
-    >
-        <div className="text-gray-400 group-hover:text-blue-500 transition-colors">
-            {/* 你可以使用图标库，或者直接用文字 */}
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-        </div>
-        <p className="mt-2 font-semibold text-gray-500 group-hover:text-blue-600 transition-colors">
-            创建自定义角色
-        </p>
+const AddCharacterCard: FC<AddCharacterCardProps> = ({ onClick }) => (
+  <div
+    onClick={onClick}
+    className="group bg-white rounded-xl shadow-md overflow-hidden cursor-pointer transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center h-full"
+  >
+    <div className="flex flex-col items-center justify-center p-8 text-center">
+      <div className="bg-blue-100 rounded-full p-4 mb-3">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+        </svg>
+      </div>
+      <h3 className="font-bold text-lg text-gray-800">创建新角色</h3>
+      <p className="text-sm text-gray-500 mt-2">点击添加自定义角色</p>
     </div>
+  </div>
 );
 
 export default AddCharacterCard;
