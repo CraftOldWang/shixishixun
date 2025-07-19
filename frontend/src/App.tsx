@@ -7,6 +7,7 @@ import ChatPage from "./pages/ChatPage";
 import WordBookPage from "./pages/WordBookPage";
 import ProfilePage from "./pages/ProfilePage";
 import PrivateRoute from "./components/PrivateRoute";
+import TopicSelectionPage from "./pages/TopicSelectionPage";
 
 const App = () => {
     return (
@@ -30,7 +31,7 @@ const App = () => {
                                 }
                             />
                             <Route
-                                path="/chat/:characterId?"
+                                path="/chat/:conversationId"
                                 element={
                                     <PrivateRoute>
                                         <ChatPage />
@@ -53,6 +54,14 @@ const App = () => {
                                     </PrivateRoute>
                                 }
                             />
+                            <Route
+                                path="/character/:characterId/new-topic"
+                                element={
+                                    <PrivateRoute>
+                                        <TopicSelectionPage />
+                                    </PrivateRoute>
+                                }
+                            />{" "}
                         </Routes>
                     </div>
                 </Router>

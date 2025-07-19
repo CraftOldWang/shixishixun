@@ -1,0 +1,82 @@
+import type { Message } from "../types";
+
+export const fetchAiOptions = async (replyText: string): Promise<string[]> => {
+    // 为了模拟网络延迟，你可以添加一个 setTimeout
+    const mockAiOptions: string[] = [
+        "关于它的位置有什么理论？",
+        "哪些古代文献提到了它？",
+        "为什么它会毁灭？",
+    ];
+    await new Promise((resolve) => setTimeout(resolve, 2000)); // 延迟500毫秒
+    return mockAiOptions;
+
+    try {
+        const res = await fetch("/api/get-ai-options", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ reply: replyText }),
+        });
+        // 期待后端返回
+        // {
+        //     "options": ["xxx1", "xxx2", "xxx3"]
+        // }
+        const data = await res.json();
+        return data.options;
+    } catch (err) {
+        console.error("获取AI推荐问题失败", err);
+        return [];
+    }
+};
+
+// 保存用户消息接口
+export async function saveUserMessage(
+    content: string,
+    conversationId: string
+): Promise<Message> {
+    // 模拟数据， 真实的 api， 时间要从 后台取什么的。...
+    // 为了模拟网络延迟，你可以添加一个 setTimeout
+    await new Promise((resolve) => setTimeout(resolve, 2000)); // 延迟500毫秒
+
+    return {
+        id: `msg-${Date.now()}`,
+        conversationId: conversationId,
+        content: content,
+        isUser: true,
+        timestamp: new Date().toISOString(),
+    };
+
+    const res = await fetch("/api/save-message", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content, conversationId, isUser: true }),
+    });
+    if (!res.ok) throw new Error("保存消息失败");
+    return res.json();
+}
+
+// 获取AI回复接口
+export async function getAiResponse(
+    userInput: string,
+    conversationId: string
+): Promise<Message> {
+    // 为了模拟网络延迟，你可以添加一个 setTimeout
+    await new Promise((resolve) => setTimeout(resolve, 4000)); // 延迟500毫秒
+
+    return {
+        id: `msg-${Date.now()}`,
+        conversationId: conversationId,
+        content: `这是AI的模拟回复, 对于${userInput}`,
+        isUser: false,
+        timestamp: new Date().toISOString(),
+    };
+
+    const res = await fetch("/api/get-ai-response", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userInput, conversationId }),
+    });
+    if (!res.ok) throw new Error("获取AI回复失败");
+    return res.json();
+}

@@ -67,9 +67,9 @@ const NavBar: React.FC<NavBarProps> = ({ currentUser, onLogout }) => {
                             <span className="text-gray-700 font-medium">
                                 {currentUser.username}
                             </span>
-                            {/* 暂时不考虑给用户添加头像 */}
+                            {/* TODO暂时不考虑给用户添加头像, 可能随机一个 或者...找一个 */}
                             <img
-                                src={`https://i.pravatar.cc/150?u=${currentUser.id}`}
+                                src={`https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTRR-BzFOrymJ6oS1w1T2N_OdQ4U-H-hmZdTB_DebBCv2MDNHsMKxjsnVtf&s`}
                                 alt="avatar"
                                 className="h-9 w-9 rounded-full object-cover"
                             />

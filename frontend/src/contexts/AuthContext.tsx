@@ -33,6 +33,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     useEffect(() => {
         const checkAuthStatus = async () => {
             const token = localStorage.getItem("accessToken");
+
+            // TODO测试时，无论怎样，都加载测试用户
+            setUser(await getMe())
             if (token) {
                 try {
                     // 关键步骤：将 token 设置到 axios 的默认请求头中
@@ -61,16 +64,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const login = async (username: string, password: string) => {
         setIsLoading(true);
         try {
-            // 1-2 尝试登录
-            const { access_token } = await loginUser(username, password);
-
-            // 3. 存储 token 到 localStorage
-            localStorage.setItem("accessToken", access_token);
-
-            // 4. 更新 axios 实例的默认请求头，用于后续所有请求
-            apiClient.defaults.headers.common[
-                "Authorization"
-            ] = `Bearer ${access_token}`;
+            //TODO 正式API调用时需要更改
+            // // 1-2 尝试登录
+            // const { access_token } = await loginUser(username, password);
+            // // 3. 存储 token 到 localStorage
+            // localStorage.setItem("accessToken", access_token);
+            // // 4. 更新 axios 实例的默认请求头，用于后续所有请求
+            // apiClient.defaults.headers.common[
+            //     "Authorization"
+            // ] = `Bearer ${access_token}`;
 
             // 5. 获取并设置用户信息
             setUser(await getMe());

@@ -3,119 +3,21 @@ import { X } from "lucide-react";
 
 // Import your custom types
 import type { Character, Conversation } from "../types/index";
-
+import { fetchConversationsByCharacter } from "../services/conversationService";
+import { useNavigate } from "react-router-dom";
 // Define the types for the component's props
 interface HistoryDialogProps {
     character: Character;
     onClose: () => void;
-    onStartNewConversation: (character: Character) => void;
 }
 
-// A mock API function, now fully typed
-// 这个也要根据JWT 获取特定用户的吧
-const fetchConversationsForCharacter = async (
-    characterId: string
-): Promise<Conversation[]> => {
-    console.log(`Fetching history for character ${characterId}...`);
-    // In a real app, you would make a type-safe API call here.
-    // const response = await fetch(`/api/characters/${characterId}/conversations`);
-    // const data: Conversation[] = await response.json();
-    // return data;
-
-    // Returning mock data for the example:
-    //TODO 也许拿到之后需要排序。。。。
-    return new Promise((resolve) =>
-        setTimeout(() => {
-            if (characterId === "char-1") {
-                resolve([
-                    {
-                        id: "conv-1",
-                        characterId: "char-1",
-                        userId: "user-1",
-                        title: "探讨宇宙的起源",
-                        topic: "科学",
-                        summary: "关于大爆炸理论的一些初步讨论...",
-                        updatedAt: "2025-07-15",
-                    },
-                    {
-                        id: "conv-2",
-                        characterId: "char-1",
-                        userId: "user-1",
-                        title: "如何烤出完美的披萨",
-                        topic: "烹饪",
-                        summary: "从面团发酵到烤箱温度的精确控制...",
-                        updatedAt: "2025-07-12",
-                    },
-                    {
-                        id: "conv-3",
-                        characterId: "char-1",
-                        userId: "user-1",
-                        title: "如何烤出完美的披萨",
-                        topic: "烹饪",
-                        summary: "从面团发酵到烤箱温度的精确控制...",
-                        updatedAt: "2025-07-12",
-                    },
-                    {
-                        id: "conv-4",
-                        characterId: "char-1",
-                        userId: "user-1",
-                        title: "如何烤出完美的披萨",
-                        topic: "烹饪",
-                        summary: "从面团发酵到烤箱温度的精确控制...",
-                        updatedAt: "2025-07-12",
-                    },
-                    {
-                        id: "conv-5",
-                        characterId: "char-1",
-                        userId: "user-1",
-                        title: "如何烤出完美的披萨",
-                        topic: "烹饪",
-                        summary: "从面团发酵到烤箱温度的精确控制...",
-                        updatedAt: "2025-07-12",
-                    },
-                    {
-                        id: "conv-6",
-                        characterId: "char-1",
-                        userId: "user-1",
-                        title: "如何烤出完美的披萨",
-                        topic: "烹饪",
-                        summary: "从面团发酵到烤箱温度的精确控制...",
-                        updatedAt: "2025-07-12",
-                    },
-                ]);
-            } else {
-                resolve([]);
-            }
-        }, 1000)
-    );
-};
-
 // Use the FC (Functional Component) type from React for props typing
-const HistoryDialog: FC<HistoryDialogProps> = ({
-    character,
-    onClose,
-    onStartNewConversation,
-}) => {
+const HistoryDialog: FC<HistoryDialogProps> = ({ character, onClose }) => {
     // Type the state variables
     const [conversations, setConversations] = useState<Conversation[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
-
-    // //TODO 会话，应该是根据角色和用户，通过 event handler获取 而不是用useEffect
-    // useEffect(() => {
-    //     setConversations([
-    //         {
-    //             id: "conv-1",
-    //             characterId: "char-3",
-    //             userId: currentUser.id,
-    //             title: "本周训练计划",
-    //             topic: "力量训练",
-    //             summary: "讨论了周三的腿部训练日强度和注意事项...",
-    //             updatedAt: "2023-10-27T10:30:00Z",
-    //         },
-    //     ]);
-    // }, []);
-
+    const navigate = useNavigate();
     useEffect(() => {
         // No need to check for character here, as the parent component ensures it exists before rendering
         const loadConversations = async () => {
@@ -123,7 +25,7 @@ const HistoryDialog: FC<HistoryDialogProps> = ({
             setError(null);
             try {
                 const fetchedConversations =
-                    await fetchConversationsForCharacter(character.id);
+                    await fetchConversationsByCharacter(character.id);
                 setConversations(fetchedConversations);
             } catch (err) {
                 setError("无法加载对话记录。");
@@ -135,6 +37,16 @@ const HistoryDialog: FC<HistoryDialogProps> = ({
 
         loadConversations();
     }, [character.id]); // Re-run the effect only when the character ID changes
+
+    const handleStartNewConversation = () => {
+        // 跳转挑选话题的逻辑放到这里了。
+        navigate(`/character/${character!.id}/new-topic`);
+    };
+
+    // 得有conversations 才能点到这个按钮。。。。
+    const handleContinueOldConversation = (conv: Conversation): void => {
+        navigate(`/chat/${conv.id}`);
+    };
 
     const renderContent = () => {
         if (isLoading) {
@@ -156,10 +68,14 @@ const HistoryDialog: FC<HistoryDialogProps> = ({
             );
         }
         // `conv` is now correctly typed as Conversation, so you get full autocomplete
+        //TODO  这里用的 历史会话，是否要根据时间来排序
         return conversations.map((conv) => (
             <div
                 key={conv.id}
-                className="p-4 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100"
+                onClick={() => {
+                    handleContinueOldConversation(conv);
+                }}
+                className="p-4 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 shadow-md transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
             >
                 <div className="font-semibold text-gray-800">{conv.title}</div>
                 {/* Accessing properties from your Conversation type */}
@@ -192,7 +108,7 @@ const HistoryDialog: FC<HistoryDialogProps> = ({
                 </div>
                 <div className="p-6">
                     <button
-                        onClick={() => onStartNewConversation(character)}
+                        onClick={handleStartNewConversation}
                         className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors"
                     >
                         开启新对话

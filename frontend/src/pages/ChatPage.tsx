@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Volume2, X, Send, Search, MessageSquare, Menu } from "lucide-react";
 import { Star } from "lucide-react"; // 你可以换成 StarOff 或 Bookmark 等
 import { ChevronLeft, ChevronRight } from "lucide-react";
-
+import { useParams } from "react-router-dom";
 import type {
     User,
     Character,
@@ -10,90 +10,21 @@ import type {
     Conversation,
     Wordcard,
 } from "../types/index";
-
+import {
+    getConversationWithoutMessages,
+    getMessagesByConversationId,
+} from "../services/conversationService";
+import { fetchSingleCharacterById } from "../services/characterService";
+import { fetchWordDefinition } from "../services/wordService";
+import {
+    fetchAiOptions,
+    getAiResponse,
+    saveUserMessage,
+} from "../services/aiService";
 // --- 模拟数据 (为单个对话场景调整) ---
 
-const mockCharacter: Character = {
-    id: "char-1",
-    name: "艾拉",
-    description: "一位知识渊博的图书管理员，对古代历史充满热情。",
-    avatar: "https://bkudcgimcodwrexeqekc.supabase.co/storage/v1/object/public/media/characters/bK0mXMTrrspFRMYnE10qbheVZhODQEO4/neutral.jpg",
-};
-const mockConversation: Conversation = {
-    id: "conv-1",
-    characterId: "char-1",
-    userId: "user-1",
-    title: "探寻失落的亚特兰蒂斯",
-    topic: "古代历史",
-    summary: "我们讨论了关于亚特兰蒂斯沉没的几种理论...",
-    updatedAt: "2024-07-18T10:30:00Z",
-    backgroundUrl: "https://w.wallhaven.cc/full/po/wallhaven-po2vg3.jpg",
-};
-const initialMessages: Message[] = [
-    {
-        id: "msg-1-1",
-        conversationId: "conv-1",
-        content:
-            "Hello, traveler. Welcome to the Royal Library. What ancient secrets are you interested in?",
-        isUser: false,
-        timestamp: "2024-07-18T10:30:00Z",
-    },
-    {
-        id: "msg-1-2",
-        conversationId: "conv-1",
-        content:
-            "I have been studying the legends about Atlantis. Are there any clues?",
-        isUser: true,
-        timestamp: "2024-07-18T10:31:00Z",
-    },
-    {
-        id: "msg-1-3",
-        conversationId: "conv-1",
-        content:
-            "A wise choice. Many people think it is just a myth, but some ancient texts hint at its real existence.",
-        isUser: false,
-        timestamp: "2024-07-18T10:32:00Z",
-    },
-];
-const mockAiOptions: string[] = [
-    "关于它的位置有什么理论？",
-    "哪些古代文献提到了它？",
-    "为什么它会毁灭？",
-];
-
-// --- 模拟 API 调用 ---
-const fetchWordDefinition = async (
-    word: string
-): Promise<Partial<Wordcard>> => {
-    console.log(`Fetching definition for: ${word}`);
-    return new Promise((resolve) =>
-        setTimeout(
-            () =>
-                resolve({
-                    word: word,
-                    pronunciation: "发音 [æpl]",
-                    pos: "词性noun",
-                    context: `这是一个模拟的'${word}'的释义。`,
-                    //context : `这是包含'${word}'的上下文句子。`, // 上下文。。。
-                }),
-            500
-        )
-    );
-};
-
-const getMockAiResponse = (userInput: string): Message => ({
-    id: `msg-${Date.now()}`,
-    conversationId: mockConversation.id,
-    content: `关于“${userInput.substring(
-        0,
-        10
-    )}...”，这是一个有趣的问题。根据古籍记载，理论上... (模拟AI回复)`,
-    isUser: false,
-    timestamp: new Date().toISOString(),
-});
-
 // --- React 组件 ---
-// **【新】** 单词定义悬浮窗 (Popover)
+// 单词定义悬浮窗 (Popover)
 const WordDefinitionPopup: React.FC<{
     word: string;
     position: { top: number; left: number };
@@ -159,15 +90,11 @@ const WordDefinitionPopup: React.FC<{
     );
 };
 
-// 左侧 - 对话历史记录
-
-// **【修改】** 左侧 - 对话历史记录
-
-// **【新】** 左侧 - 可伸缩的对话历史侧边栏
+//  左侧 - 可伸缩的对话历史侧边栏
 const ConversationSidebar: React.FC<{
     isCollapsed: boolean;
     onToggle: () => void;
-    messages: Message[];
+    messages: Message[] | null;
     onWordMouseEnter: (
         word: string,
         position: { top: number; left: number }
@@ -250,66 +177,7 @@ const ConversationSidebar: React.FC<{
     );
 };
 
-// const MessageHistoryPanel: React.FC<{
-//     messages: Message[];
-//     onWordMouseEnter: (
-//         word: string,
-//         position: { top: number; left: number }
-//     ) => void;
-//     onWordMouseLeave: () => void;
-// }> = ({ messages, onWordMouseEnter, onWordMouseLeave }) => {
-//     const endOfMessagesRef = useRef<HTMLDivElement>(null);
-//     useEffect(() => {
-//         endOfMessagesRef.current?.scrollIntoView({ behavior: "smooth" });
-//     }, [messages]);
-
-//     const handleWordHover = (e: React.MouseEvent<HTMLSpanElement>) => {
-//         const text = e.currentTarget.innerText.trim().replace(/[.,!?]/g, "");
-//         if (text) {
-//             const rect = e.currentTarget.getBoundingClientRect();
-//             onWordMouseEnter(text, { top: rect.bottom + 8, left: rect.left });
-//         }
-//     };
-
-//     return (
-//         <div className="w-full h-full bg-black bg-opacity-20 backdrop-blur-sm p-6 flex flex-col">
-//             <h2 className="text-xl font-bold text-white mb-4 border-b border-gray-500 pb-2">
-//                 对话历史
-//             </h2>
-//             <div className="flex-1 overflow-y-auto space-y-4 pr-2">
-//                 {messages.map((msg) => (
-//                     <div
-//                         key={msg.id}
-//                         className={`p-3 rounded-lg ${
-//                             msg.isUser
-//                                 ? "bg-blue-800 bg-opacity-50 text-right"
-//                                 : "bg-gray-700 bg-opacity-50"
-//                         }`}
-//                     >
-//                         <p className="text-sm text-white">
-//                             {msg.content.split(/(\s+)/).map((word, index) => (
-//                                 <span
-//                                     key={index}
-//                                     className="cursor-pointer hover:bg-yellow-400 hover:text-black rounded"
-//                                     onMouseEnter={handleWordHover}
-//                                     onMouseLeave={onWordMouseLeave}
-//                                 >
-//                                     {word}
-//                                 </span>
-//                             ))}
-//                         </p>
-//                         <p className="text-xs text-gray-400 mt-1">
-//                             {new Date(msg.timestamp).toLocaleTimeString()}
-//                         </p>
-//                     </div>
-//                 ))}
-//                 <div ref={endOfMessagesRef} />
-//             </div>
-//         </div>
-//     );
-// };
-
-// **【修改】** 右侧 - 当前角色回复
+// 右侧 - 当前角色回复
 const CurrentReplyPanel: React.FC<{
     message: Message | null;
     onWordMouseEnter: (
@@ -375,14 +243,24 @@ const CurrentReplyPanel: React.FC<{
 
 // --- 主页面组件 ---
 export default function ChatPage() {
-    const [conversation] = useState<Conversation>(mockConversation);
-    const [character] = useState<Character>(mockCharacter);
-    const [messages, setMessages] = useState<Message[]>(initialMessages);
+    // const [character] = useState<Character>(mockCharacter);
+
+    // 状态控制
     const [currentCharacterReply, setCurrentCharacterReply] =
         useState<Message | null>(null);
     const [inputValue, setInputValue] = useState("");
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
+    const [loading, setLoading] = useState(true);
 
+    // 路径参数
+    // TODO使用假数据时，返回的conversation对象与 这个id 无关
+    const { conversationId } = useParams<{ conversationId: string }>();
+
+    //需要用api fetch的东西。
+    const [conversation, setConversation] = useState<Conversation | null>(null);
+    const [character, setCharacter] = useState<Character | null>(null);
+    const [messages, setMessages] = useState<Message[] | null>(null);
+    const [aiOptions, setAiOptions] = useState<string[] | null>(null);
     // 悬浮窗状态管理
     const [popupInfo, setPopupInfo] = useState<{
         word: string;
@@ -392,31 +270,113 @@ export default function ChatPage() {
     // 编辑器提示我使用更安全的 ... 不要访问NodeJS
     const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    // 这一块没理解
     useEffect(() => {
-        const lastCharacterMessage = [...messages]
-            .reverse()
-            .find((m) => !m.isUser);
-        setCurrentCharacterReply(lastCharacterMessage || null);
+        if (!conversationId) return;
+
+        const loadData = async () => {
+            setLoading(true);
+            try {
+                // 获取会话信息(注意messages是空的)
+                const conv = await getConversationWithoutMessages(
+                    conversationId
+                );
+                setConversation(conv);
+
+                // 这个貌似可以跟下面获取角色信息...并发执行。。不过不管了
+                const msg = await getMessagesByConversationId(conversationId);
+                setMessages(msg);
+
+                // 获取角色信息
+                const char = await fetchSingleCharacterById(conv.characterId);
+                setCharacter(char);
+            } catch (err) {
+                console.error("加载失败：", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadData();
+    }, [conversationId]); // 说实话也就最初需要加载
+
+    // 同步更新当前回复
+    useEffect(() => {
+        // 发送消息之后，aioptions应该先被清空。
+        setAiOptions([]);
+
+        if (messages && messages.length > 0) {
+            const lastCharacterMessage = [...messages]
+                .reverse()
+                .find((m) => !m.isUser);
+            setCurrentCharacterReply(lastCharacterMessage || null);
+        } else {
+            setCurrentCharacterReply(null);
+        }
     }, [messages]);
 
-    const handleSendMessage = (content: string) => {
+    // 异步请求推荐问题
+    useEffect(() => {
+        if (!currentCharacterReply?.content) {
+            setAiOptions([]);
+            return;
+        }
+
+        const fetchOptions = async () => {
+            try {
+                const options = await fetchAiOptions(
+                    currentCharacterReply.content
+                );
+                if (Array.isArray(options)) {
+                    setAiOptions(options.slice(0, 3));
+                } else {
+                    setAiOptions([]);
+                }
+            } catch {
+                setAiOptions([]);
+            }
+        };
+
+        fetchOptions();
+    }, [currentCharacterReply]);
+
+    const handleSendMessage = async (content: string) => {
         if (content.trim() === "") return;
+
+        // 先在前端展示用户消息（即时响应）
+        const tempId = `temp-${Date.now()}`;
         const userMessage: Message = {
-            id: `msg-${Date.now()}`,
-            conversationId: conversation.id,
-            content: content,
+            id: tempId,
+            conversationId: conversation!.id,
+            content,
             isUser: true,
             timestamp: new Date().toISOString(),
         };
-        setMessages((prev) => [...prev, userMessage]);
-        setInputValue("");
-        setTimeout(() => {
-            const aiResponse = getMockAiResponse(content);
-            setMessages((prev) => [...prev, aiResponse]);
-        }, 1500);
-    };
 
+        setMessages((prev) => [...prev!, userMessage]);
+        setInputValue("");
+
+        try {
+            // 调接口保存用户消息，得到后端消息（带正式id等）
+            const savedUserMessage = await saveUserMessage(
+                content,
+                conversation!.id
+            );
+
+            // 替换临时消息为后端返回的消息（根据 id 替换，确保一致）
+            setMessages((prev) =>
+                prev!.map((msg) => (msg.id === tempId ? savedUserMessage : msg))
+            );
+
+            // 调接口获取AI回复
+            const aiResponse = await getAiResponse(content, conversation!.id);
+
+            // 添加AI回复消息
+            setMessages((prev) => [...prev!, aiResponse]);
+        } catch (err) {
+            console.error("消息发送或AI回复失败", err);
+            // 这里可做失败提示或回退处理
+        }
+    };
     //  悬浮窗显示/隐藏逻辑
     const handleWordMouseEnter = (
         word: string,
@@ -434,6 +394,9 @@ export default function ChatPage() {
     const handlePopupMouseEnter = () => {
         if (closeTimer.current) clearTimeout(closeTimer.current);
     };
+
+    if (loading) return <div>加载中...</div>;
+    if (!conversation || !character) return <div>未找到会话或角色</div>;
 
     return (
         <div className="h-screen w-screen bg-gray-900 font-sans text-white flex relative overflow-hidden">
@@ -511,16 +474,19 @@ export default function ChatPage() {
                 {/* 底部输入区 */}
                 <div className="relative z-20 p-4 bg-black bg-opacity-30 backdrop-blur-md border-t border-gray-700">
                     <div className="max-w-4xl mx-auto">
-                        <div className="flex flex-wrap justify-center gap-2 mb-3">
-                            {mockAiOptions.map((option, index) => (
-                                <button
-                                    key={index}
-                                    onClick={() => handleSendMessage(option)}
-                                    className="bg-gray-700 text-white text-sm px-4 py-2 rounded-full hover:bg-gray-600 transition-colors"
-                                >
-                                    {option}
-                                </button>
-                            ))}
+                        <div className="flex flex-wrap justify-center gap-2 mb-3 min-h-[40px]">
+                            {aiOptions &&
+                                aiOptions.map((option, index) => (
+                                    <button
+                                        key={index}
+                                        onClick={() =>
+                                            handleSendMessage(option)
+                                        }
+                                        className="bg-gray-700 text-white text-sm px-4 py-2 rounded-full hover:bg-gray-600 transition-colors"
+                                    >
+                                        {option}
+                                    </button>
+                                ))}
                         </div>
                         <div className="flex items-center bg-gray-800 rounded-xl p-2">
                             <input
