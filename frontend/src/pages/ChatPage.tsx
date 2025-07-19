@@ -71,8 +71,10 @@ const fetchWordDefinition = async (
             () =>
                 resolve({
                     word: word,
-                    definition: `这是一个模拟的'${word}'的释义。`,
-                    context: `这是包含'${word}'的上下文句子。`,
+                    pronunciation: "发音 [æpl]",
+                    pos: "词性noun",
+                    context: `这是一个模拟的'${word}'的释义。`,
+                    //context : `这是包含'${word}'的上下文句子。`, // 上下文。。。
                 }),
             500
         )
@@ -145,7 +147,12 @@ const WordDefinitionPopup: React.FC<{
                         <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-4/5"></div>
                     </div>
                 ) : (
-                    <p className="text-sm">{data?.definition}</p>
+                    // TODO这个样式有点怪....
+                    <>
+                        <p className="text-sm">{data?.pronunciation}</p>
+                        <p className="text-sm">{data?.pos}</p>
+                        <p className="text-sm">{data?.context}</p>
+                    </>
                 )}
             </div>
         </div>

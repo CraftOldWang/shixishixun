@@ -46,7 +46,7 @@ export interface WordCard {
   word: string; 
   pronunciation?: string;   // 这是什么？
   pos?: string;
-  context?: string;
+  context?: string;   // BUG现在貌似当成content用了，之后再纠正
   conversationId: string; //TODO ， 到底要什么字段
   messageId?: string;   // 有这个应该就不需要conversationId了吧，或者多存一个方便使用。？
   createdAt: string;
