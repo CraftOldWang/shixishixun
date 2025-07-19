@@ -8,7 +8,7 @@ import type {
     Character,
     Message,
     Conversation,
-    WordCard,
+    Wordcard,
 } from "../types/index";
 
 // --- 模拟数据 (为单个对话场景调整) ---
@@ -64,7 +64,7 @@ const mockAiOptions: string[] = [
 // --- 模拟 API 调用 ---
 const fetchWordDefinition = async (
     word: string
-): Promise<Partial<WordCard>> => {
+): Promise<Partial<Wordcard>> => {
     console.log(`Fetching definition for: ${word}`);
     return new Promise((resolve) =>
         setTimeout(
@@ -100,7 +100,7 @@ const WordDefinitionPopup: React.FC<{
     onMouseEnter: () => void;
     onMouseLeave: () => void;
 }> = ({ word, position, onMouseEnter, onMouseLeave }) => {
-    const [data, setData] = useState<Partial<WordCard> | null>(null);
+    const [data, setData] = useState<Partial<Wordcard> | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isFavorited, setIsFavorited] = useState(false); // 收藏状态
 

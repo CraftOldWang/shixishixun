@@ -1,9 +1,9 @@
 import React from "react";
-import type { WordCard } from "../types";
+import type { Wordcard } from "../types";
 import { Volume2, Trash2 } from "lucide-react";
 
 interface WordCardProps {
-  wordCard: WordCard;
+  wordCard: Wordcard;
   onRemove: (id: string) => void;
 }
 

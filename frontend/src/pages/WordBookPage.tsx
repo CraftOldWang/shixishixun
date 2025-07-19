@@ -3,6 +3,7 @@ import WordCard from "../components/WordCard";
 import Navbar from "../components/WordCardNavbar";
 import { useNavigate } from "react-router-dom";
 import { X, ArrowLeft, Search, Plus } from "lucide-react";
+import type { Wordcard } from "../types";
 
 const WordBookPage = () => {
     const [currentUser, setCurrentUser] = useState({
@@ -10,8 +11,8 @@ const WordBookPage = () => {
         username: "Alice",
     });
 
-    const [wordCards, setWordCards] = useState<WordCard[]>([]);
-    const [filteredCards, setFilteredCards] = useState<WordCard[]>([]);
+    const [wordCards, setWordCards] = useState<Wordcard[]>([]);
+    const [filteredCards, setFilteredCards] = useState<Wordcard[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("all");
     const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
@@ -21,7 +22,7 @@ const WordBookPage = () => {
 
     // Mock Data
     useEffect(() => {
-        const mockData: WordCard[] = [
+        const mockData: Wordcard[] = [
             {
                 id: "word-1",
                 userId: "user-123",

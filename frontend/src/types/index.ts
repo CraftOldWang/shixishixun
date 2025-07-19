@@ -40,7 +40,7 @@ export interface Conversation {
 }
 
 // 单词卡类型
-export interface WordCard {
+export interface Wordcard {
   id: string;
   userId: string;
   word: string; 
