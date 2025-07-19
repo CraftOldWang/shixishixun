@@ -1,5 +1,6 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel
 import os
 from dotenv import load_dotenv
@@ -9,6 +10,13 @@ import json
 import httpx
 import asyncio
 from tenacity import retry, stop_after_attempt, wait_fixed
+from sqlalchemy.orm import Session
+from datetime import timedelta
+from core.config import settings
+from core.auth import authenticate_user, create_access_token, get_password_hash, get_current_active_user
+from db.database import get_db
+from models.models import User
+from schemas.schemas import UserCreate, UserResponse, Token
 
 # 加载环境变量
 load_dotenv("app.env")
@@ -69,19 +77,13 @@ conversation_topics = [
 async def call_tongyi_api(prompt, model="qwen-max"):
     """调用通义千问API"""
     try:
-        # 由于API调用可能存在问题，先使用模拟数据
         print(f"尝试调用通义千问API，提示词: {prompt[:100]}...")
-        
-        # 这里应该是实际的API调用，但现在先返回模拟数据
-        # 在实际项目中，取消下面的注释并实现真正的API调用
-        """
+        # 启用真实API调用
         url = "https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation"
-        
         headers = {
             "Authorization": f"Bearer {DASHSCOPE_API_KEY}",
             "Content-Type": "application/json"
         }
-        
         payload = {
             "model": model,
             "input": {
@@ -98,33 +100,45 @@ async def call_tongyi_api(prompt, model="qwen-max"):
             },
             "parameters": {}
         }
-        
         async with httpx.AsyncClient(timeout=30.0) as client:
             response = await client.post(url, headers=headers, json=payload)
             response.raise_for_status()
             result = response.json()
-            
             if "output" in result and "text" in result["output"]:
                 return result["output"]["text"]
-        """
-        
-        # 返回模拟数据
-        if "语法选择题" in prompt:
-            return """
-            {
-                "correct": "I went to Japan last summer.",
-                "error1": "I go to Japan last summer.",
-                "error2": "I have been to Japan last summer.",
-                "explanation": "The correct sentence uses the simple past tense 'went' with the past time expression 'last summer'. The first error uses present tense 'go' with a past time expression, which is incorrect. The second error uses present perfect 'have been' with a specific past time expression, which is grammatically incorrect."
-            }
-            """
-        elif "语法错误" in prompt:
-            return "The sentence 'I go to Japan last summer' contains a tense error. When talking about a completed action in the past with a specific time ('last summer'), we should use the simple past tense, not the present tense. The correct form is 'I went to Japan last summer'."
-        else:
-            return "I'm not sure how to respond to that prompt."
     except Exception as e:
         print(f"API调用失败: {str(e)}")
         return None
+
+# 新增：角色风格回复API调用
+async def call_character_reply_api(character, user_message, topic=None, options=None, is_feedback=False, is_correct=None):
+    """
+    通过大模型生成角色风格的回复。
+    - character: 角色设定
+    - user_message: 用户消息
+    - topic: 当前主题
+    - options: 语法选项
+    - is_feedback: 是否为答题反馈
+    - is_correct: 答题是否正确
+    """
+    if is_feedback:
+        if is_correct:
+            prompt = f"""
+你是一个{character}，请用你的风格鼓励用户，告诉他语法选择题答对了。可以简单点评一下用户的表现，并鼓励继续学习。请用英文和适当的二次元语气。
+"""
+        else:
+            prompt = f"""
+你是一个{character}，请用你的风格安慰用户，告诉他语法选择题答错了。可以简单指出有语法错误，并鼓励用户继续努力。请用英文和适当的二次元语气。
+"""
+    else:
+        prompt = f"""
+你是一个{character}，请用你的风格和用户进行英语学习对话。用户刚刚说："{user_message}"。当前主题是"{topic}"。请用英文和适当的二次元语气回复用户，欢迎他并引导他参与语法练习。
+"""
+    response = await call_tongyi_api(prompt)
+    if response and len(response.strip()) > 0:
+        return response.strip()
+    # 兜底
+    return f"[{character}] 很高兴和你交流！"
 
 @app.get("/")
 async def root():
@@ -136,41 +150,17 @@ async def read_item(item_id: int):
 
 @app.post("/chat", response_model=ChatResponse)
 async def chat_with_character(request: ChatRequest):
-    """与二次元角色对话（模拟版）"""
-    
-    # 模拟回复，实际项目中这里会调用通义千问API
-    character_responses = {
-        "友好的二次元少女": f"Hello! Nice to meet you~ (*^▽^*)\n\nI'm here to help you practice English grammar!",
-        "傲娇的二次元少女": f"Hmph! I-it's not like I wanted to talk to you or anything...\n\nBut I guess I can help you with English grammar...",
-        "知性的二次元大姐姐": f"Good day. How may I assist you today?\n\nI'd be happy to help you practice English grammar.",
-        "元气满满的运动少女": f"Hey there! Let's chat with energy! (•̀ᴗ•́)و\n\nLet's practice English grammar together!",
-        "害羞内向的文学少女": f"H-hello... *looks down at book* Nice to meet you...\n\nI can help you with English grammar if you'd like..."
-    }
-    
+    """与二次元角色对话（大模型版）"""
     character = request.character
-    if character not in character_responses:
-        character = "友好的二次元少女"
-        
-    reply = character_responses[character]
-    
-    # 分析用户消息，提取可能的主题
-    user_message = request.message.lower() if request.message else ""
-    
-    if request.message:
-        reply += f"\n\nYou said: {request.message}"
-    
+    user_message = request.message or ""
     # 生成一个会话ID
     conversation_id = f"conv_{random.randint(10000, 99999)}"
-    
     # 基于用户消息或随机选择一个主题
-    selected_topic = extract_topic_from_message(user_message) or random.choice(conversation_topics)
-    
+    selected_topic = extract_topic_from_message(user_message.lower()) or random.choice(conversation_topics)
     # 选择一个语法错误类型
     error_type = random.choice(grammar_error_types)
-    
     # 生成三个选项，其中一个正确，两个包含语法错误
     options, correct_option = await generate_ai_options(selected_topic, error_type)
-    
     # 存储会话状态
     conversations[conversation_id] = {
         "options": options,
@@ -180,11 +170,11 @@ async def chat_with_character(request: ChatRequest):
         "error_type": error_type,
         "user_message": user_message
     }
-    
+    # 角色风格回复（通过大模型）
+    reply = await call_character_reply_api(character, user_message, selected_topic, options)
     reply += f"\n\nLet's practice English grammar! Here's a sentence about '{selected_topic}'. Please choose the grammatically correct option:"
-    
     return {
-        "reply": reply, 
+        "reply": reply,
         "options": options,
         "has_options": True,
         "conversation_id": conversation_id
@@ -192,13 +182,11 @@ async def chat_with_character(request: ChatRequest):
 
 @app.post("/select_option", response_model=ChatResponse)
 async def select_option(request: OptionSelectRequest):
-    """处理用户选择的选项"""
+    """处理用户选择的选项（大模型版反馈）"""
     conversation_id = request.conversation_id
     selected_option = request.selected_option
-    
     if conversation_id not in conversations:
         raise HTTPException(status_code=404, detail="对话不存在")
-    
     conversation = conversations[conversation_id]
     options = conversation["options"]
     correct_option = conversation["correct_option"]
@@ -206,47 +194,21 @@ async def select_option(request: OptionSelectRequest):
     topic = conversation["topic"]
     error_type = conversation["error_type"]
     user_message = conversation["user_message"]
-    
-    character_responses = {
-        "友好的二次元少女": {
-            "correct": "Great job! Your answer is grammatically correct! (*^▽^*)",
-            "incorrect": "Oops! There's a grammar mistake in that sentence. Let me help you! (*^▽^*)"
-        },
-        "傲娇的二次元少女": {
-            "correct": "Hmph! I guess you got it right... not that I care or anything...",
-            "incorrect": "Wrong! Pay more attention next time! ...I-it's not like I want to help you improve..."
-        },
-        "知性的二次元大姐姐": {
-            "correct": "Excellent work. Your grammar is spot on.",
-            "incorrect": "I noticed a small error there. Let me explain the correct grammar."
-        },
-        "元气满满的运动少女": {
-            "correct": "YES! You nailed it! Perfect grammar! (•̀ᴗ•́)و",
-            "incorrect": "Oops! Almost there! Let's fix that grammar mistake! You can do it! (•̀ᴗ•́)و"
-        },
-        "害羞内向的文学少女": {
-            "correct": "T-that's correct... your grammar is good...",
-            "incorrect": "Um... there's a small mistake... let me show you the correct way..."
-        }
-    }
-    
-    if selected_option == correct_option:
-        reply = character_responses[character]["correct"]
-    else:
-        # 生成错误解释
-        error_explanation = await get_error_explanation(options[selected_option], options[correct_option], error_type)
-        reply = character_responses[character]["incorrect"] + "\n\n" + error_explanation
-    
-    # 基于之前的对话和用户选择，选择新的主题
+    is_correct = (selected_option == correct_option)
+    # 角色风格正误反馈（通过大模型）
+    feedback = await call_character_reply_api(character, user_message, topic, options, is_feedback=True, is_correct=is_correct)
+    # 语法解释
+    explanation = ""
+    if not is_correct:
+        explanation = await get_error_explanation(options[selected_option], options[correct_option], error_type)
+    reply = feedback
+    if explanation:
+        reply += f"\n\n{explanation}"
+    # 推荐下一个主题和新题目
     new_topic = suggest_next_topic(topic, user_message)
-    
-    # 选择新的语法错误类型，避免连续出现相同类型
-    new_error_type = random.choice([et for et in grammar_error_types if et != error_type])
-    
-    # 生成新的选项
+    new_error_type = random.choice(grammar_error_types)
     new_options, new_correct_option = await generate_ai_options(new_topic, new_error_type)
-    
-    # 更新会话状态
+    # 更新会话
     conversations[conversation_id] = {
         "options": new_options,
         "correct_option": new_correct_option,
@@ -255,13 +217,11 @@ async def select_option(request: OptionSelectRequest):
         "error_type": new_error_type,
         "user_message": user_message
     }
-    
     reply += f"\n\nLet's continue! Here's a sentence about '{new_topic}'. Please choose the grammatically correct option:"
-    
     return {
         "reply": reply,
         "options": new_options,
-        "correct_option": correct_option if selected_option != correct_option else None,  # 只有在用户选错时才返回正确选项
+        "correct_option": correct_option if not is_correct else None,  # 只有在用户选错时才返回正确选项
         "has_options": True,
         "conversation_id": conversation_id
     }
@@ -448,6 +408,47 @@ async def get_characters():
         {"id": 4, "name": "元气满满的运动少女", "description": "活力四射，积极向上"},
         {"id": 5, "name": "害羞内向的文学少女", "description": "安静温柔，喜欢阅读"}
     ]
+
+@app.post("/users/register", response_model=UserResponse)
+def register_user(user: UserCreate, db: Session = Depends(get_db)):
+    """注册新用户"""
+    db_user = db.query(User).filter(User.username == user.username).first()
+    if db_user:
+        raise HTTPException(status_code=400, detail="用户名已存在")
+    db_user_email = db.query(User).filter(User.email == user.email).first()
+    if db_user_email:
+        raise HTTPException(status_code=400, detail="邮箱已被注册")
+    hashed_password = get_password_hash(user.password)
+    db_user = User(
+        username=user.username,
+        email=user.email,
+        hashed_password=hashed_password
+    )
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+@app.post("/users/token", response_model=Token)
+def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    """用户登录获取令牌"""
+    user = authenticate_user(db, form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="用户名或密码错误",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user.username}, expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
+
+@app.get("/users/me", response_model=UserResponse)
+def read_users_me(current_user: User = Depends(get_current_active_user)):
+    """获取当前用户信息"""
+    return current_user
 
 if __name__ == "__main__":
     import uvicorn
