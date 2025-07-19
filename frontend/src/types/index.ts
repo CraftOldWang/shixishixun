@@ -44,7 +44,8 @@ export interface WordCard {
   id: string;
   userId: string;
   word: string; 
-  definition?: string;   // 这是什么？
+  pronunciation?: string;   // 这是什么？
+  pos?: string;
   context?: string;
   conversationId: string; //TODO ， 到底要什么字段
   messageId?: string;   // 有这个应该就不需要conversationId了吧，或者多存一个方便使用。？
