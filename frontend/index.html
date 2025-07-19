@@ -3,384 +3,246 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>二次元AI英语学习助手</title>
+    <title>二次元AI英语学习助手 - 测试前端</title>
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f5f5f5;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background-image: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        }
-        .container {
-            width: 90%;
-            max-width: 800px;
-            background-color: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-        .header {
-            background-color: #ff9cce;
-            color: white;
-            padding: 20px;
-            text-align: center;
-            font-size: 24px;
-            font-weight: bold;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
-        }
-        .character-select {
-            padding: 15px;
-            background-color: #f9f9f9;
-            border-bottom: 1px solid #eee;
-        }
-        .chat-container {
-            height: 400px;
-            overflow-y: auto;
-            padding: 20px;
-            background-color: #f9f9f9;
-        }
-        .message {
-            margin-bottom: 15px;
-            padding: 10px 15px;
-            border-radius: 18px;
-            max-width: 80%;
-            word-wrap: break-word;
-        }
-        .user-message {
-            background-color: #dcf8c6;
-            margin-left: auto;
-            border-bottom-right-radius: 5px;
-        }
-        .bot-message {
-            background-color: #ffffff;
-            margin-right: auto;
-            border-bottom-left-radius: 5px;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-        }
-        .input-container {
-            display: flex;
-            padding: 15px;
-            background-color: #f0f0f0;
-            border-top: 1px solid #ddd;
-        }
-        .message-input {
-            flex-grow: 1;
-            padding: 10px 15px;
-            border: 1px solid #ddd;
-            border-radius: 20px;
-            outline: none;
-            font-size: 16px;
-        }
-        .send-button {
-            margin-left: 10px;
-            padding: 10px 20px;
-            background-color: #ff9cce;
-            color: white;
-            border: none;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background-color 0.3s;
-        }
-        .send-button:hover {
-            background-color: #ff7cb7;
-        }
-        .options-container {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        .option-button {
-            padding: 10px 15px;
-            background-color: #e1e1ff;
-            border: 1px solid #d0d0ff;
-            border-radius: 8px;
-            cursor: pointer;
-            text-align: left;
-            transition: background-color 0.3s;
-        }
-        .option-button:hover {
-            background-color: #d0d0ff;
-        }
-        .character-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            margin-right: 10px;
-            vertical-align: middle;
-        }
-        .message-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 5px;
-        }
-        .character-name {
-            font-weight: bold;
-            color: #ff7cb7;
-        }
-        .loading {
-            text-align: center;
-            padding: 20px;
-            color: #888;
-        }
-        .correct {
-            border: 2px solid #4CAF50;
-        }
-        .incorrect {
-            border: 2px solid #F44336;
-        }
-        pre {
-            white-space: pre-wrap;
-            margin: 0;
-        }
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f7f7fb; }
+        .container { max-width: 600px; margin: 30px auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #0001; padding: 24px; }
+        h2 { margin-top: 0; }
+        .section { margin-bottom: 32px; }
+        label { display: block; margin: 8px 0 4px; }
+        input, select, button, textarea { margin-bottom: 12px; padding: 6px; border-radius: 4px; border: 1px solid #ccc; }
+        .chat-box { background: #f3f3fa; border-radius: 6px; padding: 12px; min-height: 120px; margin-bottom: 12px; }
+        .msg-user { color: #333; }
+        .msg-ai { color: #1a73e8; }
+        .msg-option { color: #e67e22; }
+        .record-list { background: #f9f9fc; border-radius: 6px; padding: 8px; }
+        .record-item { margin-bottom: 8px; }
+        .btn { background: #1a73e8; color: #fff; border: none; cursor: pointer; }
+        .btn-danger { background: #e74c3c; }
+        .flex { display: flex; gap: 8px; align-items: center; }
+        .flex-col { flex-direction: column; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">二次元AI英语学习助手</div>
-        <div class="character-select">
-            <label for="character-dropdown">选择角色：</label>
-            <select id="character-dropdown">
-                <option value="友好的二次元少女">友好的二次元少女</option>
-                <option value="傲娇的二次元少女">傲娇的二次元少女</option>
-                <option value="知性的二次元大姐姐">知性的二次元大姐姐</option>
-                <option value="元气满满的运动少女">元气满满的运动少女</option>
-                <option value="害羞内向的文学少女">害羞内向的文学少女</option>
-            </select>
-        </div>
-        <div class="chat-container" id="chat-container">
-            <div class="message bot-message">
-                <div class="message-header">
-                    <img src="https://api.dicebear.com/6.x/anime/svg?seed=Mimi" alt="角色头像" class="character-avatar">
-                    <span class="character-name">友好的二次元少女</span>
-                </div>
-                欢迎使用二次元AI英语学习助手！请发送消息开始对话~
+        <h2>二次元AI英语学习助手 - 测试前端</h2>
+
+        <div id="auth-section" class="section">
+            <div id="register-box">
+                <h3>注册</h3>
+                <label>用户名 <input id="reg-username" type="text"></label>
+                <label>邮箱 <input id="reg-email" type="email"></label>
+                <label>密码 <input id="reg-password" type="password"></label>
+                <button class="btn" onclick="register()">注册</button>
+            </div>
+            <div id="login-box" style="margin-top:16px;">
+                <h3>登录</h3>
+                <label>用户名 <input id="login-username" type="text"></label>
+                <label>密码 <input id="login-password" type="password"></label>
+                <button class="btn" onclick="login()">登录</button>
             </div>
         </div>
-        <div class="input-container">
-            <input type="text" class="message-input" id="message-input" placeholder="输入消息..." autocomplete="off">
-            <button class="send-button" id="send-button">发送</button>
+
+        <div id="main-section" class="section hidden">
+            <div class="flex" style="justify-content:space-between;">
+                <span id="user-info"></span>
+                <button class="btn" onclick="logout()">退出登录</button>
+            </div>
+            <hr>
+            <div>
+                <label>选择角色
+                    <select id="character-select"></select>
+                </label>
+            </div>
+            <div class="chat-box" id="chat-box"></div>
+            <div class="flex">
+                <input id="chat-input" type="text" style="flex:1;" placeholder="输入你的消息...">
+                <button class="btn" onclick="sendMessage()">发送</button>
+            </div>
+            <div id="option-list"></div>
+            <hr>
+            <div>
+                <h4>历史对话</h4>
+                <div class="record-list" id="record-list"></div>
+                <button class="btn btn-danger" onclick="clearAllRecords()">清空所有对话</button>
+            </div>
         </div>
     </div>
-
     <script>
-        // API基础URL
-        const API_BASE_URL = 'http://127.0.0.1:8000';
-        
-        // DOM元素
-        const chatContainer = document.getElementById('chat-container');
-        const messageInput = document.getElementById('message-input');
-        const sendButton = document.getElementById('send-button');
-        const characterDropdown = document.getElementById('character-dropdown');
-        
-        // 当前会话ID
-        let currentConversationId = '';
-        
-        // 角色头像映射
-        const characterAvatars = {
-            '友好的二次元少女': 'https://api.dicebear.com/6.x/anime/svg?seed=Mimi',
-            '傲娇的二次元少女': 'https://api.dicebear.com/6.x/anime/svg?seed=Tsundere',
-            '知性的二次元大姐姐': 'https://api.dicebear.com/6.x/anime/svg?seed=Oneesan',
-            '元气满满的运动少女': 'https://api.dicebear.com/6.x/anime/svg?seed=Genki',
-            '害羞内向的文学少女': 'https://api.dicebear.com/6.x/anime/svg?seed=Shy'
-        };
-        
-        // 发送消息
-        function sendMessage() {
-            const message = messageInput.value.trim();
-            if (message === '') return;
-            
-            // 显示用户消息
-            addMessage(message, 'user');
-            
-            // 清空输入框
-            messageInput.value = '';
-            
-            // 显示加载中
-            const loadingDiv = document.createElement('div');
-            loadingDiv.className = 'message bot-message loading';
-            loadingDiv.textContent = '思考中...';
-            chatContainer.appendChild(loadingDiv);
-            
-            // 发送API请求
-            fetch(`${API_BASE_URL}/chat`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    message: message,
-                    character: characterDropdown.value
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                // 移除加载中消息
-                chatContainer.removeChild(loadingDiv);
-                
-                // 显示机器人回复
-                addBotMessage(data);
-                
-                // 保存会话ID
-                currentConversationId = data.conversation_id;
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                chatContainer.removeChild(loadingDiv);
-                addMessage('抱歉，发生了错误，请稍后再试。', 'bot');
-            });
+        const API = location.origin.replace(/:\d+$/, ':8000');
+        let token = localStorage.getItem('token') || '';
+        let currentUser = null;
+        let currentConvId = null;
+        let currentOptions = [];
+
+        function show(id) { document.getElementById(id).classList.remove('hidden'); }
+        function hide(id) { document.getElementById(id).classList.add('hidden'); }
+        function setUserInfo(user) {
+            document.getElementById('user-info').innerText = `欢迎, ${user.username} (${user.email})`;
         }
-        
-        // 添加消息到聊天容器
-        function addMessage(text, sender) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${sender}-message`;
-            
-            if (sender === 'bot') {
-                const character = characterDropdown.value;
-                const headerDiv = document.createElement('div');
-                headerDiv.className = 'message-header';
-                
-                const avatar = document.createElement('img');
-                avatar.src = characterAvatars[character] || characterAvatars['友好的二次元少女'];
-                avatar.alt = '角色头像';
-                avatar.className = 'character-avatar';
-                
-                const nameSpan = document.createElement('span');
-                nameSpan.className = 'character-name';
-                nameSpan.textContent = character;
-                
-                headerDiv.appendChild(avatar);
-                headerDiv.appendChild(nameSpan);
-                messageDiv.appendChild(headerDiv);
-            }
-            
-            const pre = document.createElement('pre');
-            pre.textContent = text;
-            messageDiv.appendChild(pre);
-            
-            chatContainer.appendChild(messageDiv);
-            
-            // 滚动到底部
-            chatContainer.scrollTop = chatContainer.scrollHeight;
+        function showMsg(msg, type='ai') {
+            const box = document.getElementById('chat-box');
+            const div = document.createElement('div');
+            div.className = type==='user' ? 'msg-user' : (type==='option' ? 'msg-option' : 'msg-ai');
+            div.innerText = msg;
+            box.appendChild(div);
+            box.scrollTop = box.scrollHeight;
         }
-        
-        // 添加机器人消息，包括选项处理
-        function addBotMessage(data) {
-            // 添加回复文本
-            addMessage(data.reply, 'bot');
-            
-            // 如果有选项，显示选项按钮
-            if (data.has_options && data.options && data.options.length > 0) {
-                const optionsContainer = document.createElement('div');
-                optionsContainer.className = 'options-container';
-                
-                data.options.forEach((option, index) => {
-                    const optionButton = document.createElement('button');
-                    optionButton.className = 'option-button';
-                    optionButton.textContent = option;
-                    optionButton.onclick = () => selectOption(index);
-                    optionsContainer.appendChild(optionButton);
+        function clearChat() {
+            document.getElementById('chat-box').innerHTML = '';
+            document.getElementById('option-list').innerHTML = '';
+        }
+        function setOptions(options) {
+            currentOptions = options;
+            const list = document.getElementById('option-list');
+            list.innerHTML = '';
+            if (options && options.length) {
+                options.forEach((opt, idx) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'btn';
+                    btn.innerText = `${idx+1}. ${opt}`;
+                    btn.onclick = () => selectOption(idx);
+                    list.appendChild(btn);
                 });
-                
-                chatContainer.appendChild(optionsContainer);
-                
-                // 滚动到底部
-                chatContainer.scrollTop = chatContainer.scrollHeight;
             }
         }
-        
-        // 选择选项
-        function selectOption(optionIndex) {
-            // 移除所有选项按钮
-            const optionsContainer = document.querySelector('.options-container');
-            if (optionsContainer) {
-                // 获取选中的选项文本
-                const selectedOptionText = optionsContainer.children[optionIndex].textContent;
-                
-                // 添加用户选择的消息
-                addMessage(selectedOptionText, 'user');
-                
-                // 移除选项容器
-                chatContainer.removeChild(optionsContainer);
-                
-                // 显示加载中
-                const loadingDiv = document.createElement('div');
-                loadingDiv.className = 'message bot-message loading';
-                loadingDiv.textContent = '思考中...';
-                chatContainer.appendChild(loadingDiv);
-                
-                // 发送选项到API
-                fetch(`${API_BASE_URL}/select_option`, {
+        function saveToken(t) {
+            token = t;
+            localStorage.setItem('token', t);
+        }
+        function logout() {
+            token = '';
+            localStorage.removeItem('token');
+            currentUser = null;
+            hide('main-section');
+            show('auth-section');
+        }
+        async function register() {
+            const username = document.getElementById('reg-username').value.trim();
+            const email = document.getElementById('reg-email').value.trim();
+            const password = document.getElementById('reg-password').value;
+            if (!username || !email || !password) return alert('请填写完整信息');
+            try {
+                const res = await fetch(`${API}/users/register`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password })
+                });
+                if (!res.ok) throw new Error(await res.text());
+                alert('注册成功，请登录');
+            } catch (e) { alert('注册失败: ' + e.message); }
+        }
+        async function login() {
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value;
+            if (!username || !password) return alert('请填写用户名和密码');
+            try {
+                const res = await fetch(`${API}/users/token`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        selected_option: optionIndex,
-                        conversation_id: currentConversationId
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    // 移除加载中消息
-                    chatContainer.removeChild(loadingDiv);
-                    
-                    // 显示机器人回复
-                    addBotMessage(data);
-                    
-                    // 如果用户选择了错误的选项，高亮显示正确选项
-                    if (data.correct_option !== null && data.correct_option !== undefined) {
-                        // 用户选择了错误的选项
-                        const lastUserMessage = document.querySelectorAll('.user-message');
-                        if (lastUserMessage.length > 0) {
-                            lastUserMessage[lastUserMessage.length - 1].classList.add('incorrect');
-                        }
-                    } else {
-                        // 用户选择了正确的选项
-                        const lastUserMessage = document.querySelectorAll('.user-message');
-                        if (lastUserMessage.length > 0) {
-                            lastUserMessage[lastUserMessage.length - 1].classList.add('correct');
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    chatContainer.removeChild(loadingDiv);
-                    addMessage('抱歉，发生了错误，请稍后再试。', 'bot');
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`
                 });
+                if (!res.ok) throw new Error(await res.text());
+                const data = await res.json();
+                saveToken(data.access_token);
+                await afterLogin();
+            } catch (e) { alert('登录失败: ' + e.message); }
+        }
+        async function afterLogin() {
+            // 获取用户信息
+            const res = await fetch(`${API}/users/me`, { headers: { Authorization: `Bearer ${token}` } });
+            if (!res.ok) return logout();
+            currentUser = await res.json();
+            setUserInfo(currentUser);
+            hide('auth-section');
+            show('main-section');
+            await loadCharacters();
+            await loadRecords();
+            clearChat();
+        }
+        async function loadCharacters() {
+            const res = await fetch(`${API}/characters/`, { headers: { Authorization: `Bearer ${token}` } });
+            const data = await res.json();
+            const sel = document.getElementById('character-select');
+            sel.innerHTML = '';
+            data.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.name;
+                opt.innerText = c.name;
+                sel.appendChild(opt);
+            });
+        }
+        async function sendMessage() {
+            const msg = document.getElementById('chat-input').value.trim();
+            if (!msg) return;
+            showMsg(msg, 'user');
+            document.getElementById('chat-input').value = '';
+            let character = document.getElementById('character-select').value;
+            // 新建会话
+            if (!currentConvId) {
+                const res = await fetch(`${API}/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: msg, character })
+                });
+                const data = await res.json();
+                currentConvId = data.conversation_id;
+                showMsg(data.reply, 'ai');
+                setOptions(data.options);
+                await loadRecords();
+            } else {
+                // 继续会话
+                const res = await fetch(`${API}/select_option`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ selected_option: -1, conversation_id: currentConvId })
+                });
+                const data = await res.json();
+                showMsg(data.reply, 'ai');
+                setOptions(data.options);
+                await loadRecords();
             }
         }
-        
-        // 事件监听器
-        sendButton.addEventListener('click', sendMessage);
-        messageInput.addEventListener('keypress', event => {
-            if (event.key === 'Enter') {
-                sendMessage();
-            }
-        });
-        
-        // 角色选择变更时更新头像
-        characterDropdown.addEventListener('change', () => {
-            const botMessages = document.querySelectorAll('.bot-message .character-avatar');
-            const character = characterDropdown.value;
-            const avatarUrl = characterAvatars[character] || characterAvatars['友好的二次元少女'];
-            
-            botMessages.forEach(avatar => {
-                avatar.src = avatarUrl;
+        async function selectOption(idx) {
+            if (currentConvId == null) return;
+            const res = await fetch(`${API}/select_option`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ selected_option: idx, conversation_id: currentConvId })
             });
-            
-            const characterNames = document.querySelectorAll('.bot-message .character-name');
-            characterNames.forEach(name => {
-                name.textContent = character;
+            const data = await res.json();
+            showMsg(`你选择了: ${currentOptions[idx]}`, 'option');
+            showMsg(data.reply, 'ai');
+            setOptions(data.options);
+            await loadRecords();
+        }
+        async function loadRecords() {
+            const res = await fetch(`${API}/conversations/all`, { headers: { Authorization: `Bearer ${token}` } });
+            const data = await res.json();
+            const list = document.getElementById('record-list');
+            list.innerHTML = '';
+            data.forEach(conv => {
+                const div = document.createElement('div');
+                div.className = 'record-item';
+                div.innerHTML = `<b>${conv.title || '无标题对话'} (${conv.id})</b> <button class='btn btn-danger' onclick='deleteRecord(${conv.id})'>删除</button>`;
+                div.onclick = () => { currentConvId = conv.id; clearChat(); showMsg('已切换到该对话', 'option'); };
+                list.appendChild(div);
             });
-        });
+        }
+        async function deleteRecord(id) {
+            if (!confirm('确定要删除该对话吗？')) return;
+            await fetch(`${API}/conversations/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+            await loadRecords();
+            if (currentConvId == id) { currentConvId = null; clearChat(); }
+        }
+        async function clearAllRecords() {
+            if (!confirm('确定要清空所有对话吗？')) return;
+            await fetch(`${API}/conversations/clear_all`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+            await loadRecords();
+            currentConvId = null; clearChat();
+        }
+        // 自动登录
+        if (token) afterLogin();
     </script>
 </body>
 </html> 

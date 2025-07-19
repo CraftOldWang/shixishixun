@@ -1,5 +1,6 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel
 import os
 from dotenv import load_dotenv
@@ -9,6 +10,13 @@ import json
 import httpx
 import asyncio
 from tenacity import retry, stop_after_attempt, wait_fixed
+from sqlalchemy.orm import Session
+from datetime import timedelta
+from core.config import settings
+from core.auth import authenticate_user, create_access_token, get_password_hash, get_current_active_user
+from db.database import get_db
+from models.models import User
+from schemas.schemas import UserCreate, UserResponse, Token
 
 # 加载环境变量
 load_dotenv("app.env")
@@ -116,15 +124,15 @@ async def call_character_reply_api(character, user_message, topic=None, options=
     if is_feedback:
         if is_correct:
             prompt = f"""
-你是一个{character}，请用你的风格鼓励用户，告诉他语法选择题答对了。可以简单点评一下用户的表现，并鼓励继续学习。请用中文和适当的二次元语气。
+你是一个{character}，请用你的风格鼓励用户，告诉他语法选择题答对了。可以简单点评一下用户的表现，并鼓励继续学习。请用英文和适当的二次元语气。
 """
         else:
             prompt = f"""
-你是一个{character}，请用你的风格安慰用户，告诉他语法选择题答错了。可以简单指出有语法错误，并鼓励用户继续努力。请用中文和适当的二次元语气。
+你是一个{character}，请用你的风格安慰用户，告诉他语法选择题答错了。可以简单指出有语法错误，并鼓励用户继续努力。请用英文和适当的二次元语气。
 """
     else:
         prompt = f"""
-你是一个{character}，请用你的风格和用户进行英语学习对话。用户刚刚说："{user_message}"。当前主题是"{topic}"。请用中文和适当的二次元语气回复用户，欢迎他并引导他参与语法练习。
+你是一个{character}，请用你的风格和用户进行英语学习对话。用户刚刚说："{user_message}"。当前主题是"{topic}"。请用英文和适当的二次元语气回复用户，欢迎他并引导他参与语法练习。
 """
     response = await call_tongyi_api(prompt)
     if response and len(response.strip()) > 0:
@@ -400,6 +408,47 @@ async def get_characters():
         {"id": 4, "name": "元气满满的运动少女", "description": "活力四射，积极向上"},
         {"id": 5, "name": "害羞内向的文学少女", "description": "安静温柔，喜欢阅读"}
     ]
+
+@app.post("/users/register", response_model=UserResponse)
+def register_user(user: UserCreate, db: Session = Depends(get_db)):
+    """注册新用户"""
+    db_user = db.query(User).filter(User.username == user.username).first()
+    if db_user:
+        raise HTTPException(status_code=400, detail="用户名已存在")
+    db_user_email = db.query(User).filter(User.email == user.email).first()
+    if db_user_email:
+        raise HTTPException(status_code=400, detail="邮箱已被注册")
+    hashed_password = get_password_hash(user.password)
+    db_user = User(
+        username=user.username,
+        email=user.email,
+        hashed_password=hashed_password
+    )
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+@app.post("/users/token", response_model=Token)
+def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    """用户登录获取令牌"""
+    user = authenticate_user(db, form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="用户名或密码错误",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user.username}, expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
+
+@app.get("/users/me", response_model=UserResponse)
+def read_users_me(current_user: User = Depends(get_current_active_user)):
+    """获取当前用户信息"""
+    return current_user
 
 if __name__ == "__main__":
     import uvicorn

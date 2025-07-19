@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Dict
 from datetime import datetime
 
 from db.database import get_db
@@ -137,7 +137,7 @@ def chat_with_character(
     db.refresh(ai_message)
     
     # 更新对话的更新时间
-    conversation.updated_at = datetime.utcnow()
+    setattr(conversation, 'updated_at', datetime.utcnow())
     db.commit()
     
     return ai_message
@@ -164,4 +164,26 @@ def delete_conversation(
     db.delete(conversation)
     db.commit()
     
-    return None 
+    return None
+
+@router.get("/all", response_model=List[ConversationResponse])
+def get_all_user_conversations(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+):
+    """获取当前用户的所有对话及消息（不分页）"""
+    conversations = db.query(Conversation).filter(Conversation.user_id == current_user.id).order_by(Conversation.updated_at.desc()).all()
+    return conversations
+
+@router.delete("/clear_all")
+def clear_all_conversations(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+):
+    """清空当前用户的所有对话及消息"""
+    conversations = db.query(Conversation).filter(Conversation.user_id == current_user.id).all()
+    for conv in conversations:
+        db.query(Message).filter(Message.conversation_id == conv.id).delete()
+        db.delete(conv)
+    db.commit()
+    return {"msg": "所有对话及消息已清空"} 
