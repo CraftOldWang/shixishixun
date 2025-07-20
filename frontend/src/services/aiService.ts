@@ -1,19 +1,22 @@
+import { use } from "react";
 import type { Message } from "../types";
 import apiClient from "./api";
+import { useAuth } from "../contexts/AuthContext";
 
-export const fetchAiOptions = async (replyText: string): Promise<string[]> => {
+export const fetchAiOptions = async (replyText: string, conversationId: string): Promise<string[]> => {
     // 为了模拟网络延迟，你可以添加一个 setTimeout
-    const mockAiOptions: string[] = [
-        "关于它的位置有什么理论？",
-        "哪些古代文献提到了它？",
-        "为什么它会毁灭？",
-    ];
-    await new Promise((resolve) => setTimeout(resolve, 2000)); // 延迟500毫秒
-    return mockAiOptions;
+    // const mockAiOptions: string[] = [
+    //     "关于它的位置有什么理论？",
+    //     "哪些古代文献提到了它？",
+    //     "为什么它会毁灭？",
+    // ];
+    // await new Promise((resolve) => setTimeout(resolve, 2000)); // 延迟500毫秒
+    // return mockAiOptions;
 
     try {
-        const res = await apiClient.post("/api/get-ai-options", {
+        const res = await apiClient.post("/api/ai/options", {
             reply: replyText,
+            conversationId
         });
         // 期待后端返回
         // {
@@ -33,17 +36,17 @@ export async function saveUserMessage(
 ): Promise<Message> {
     // 模拟数据， 真实的 api， 时间要从 后台取什么的。...
     // 为了模拟网络延迟，你可以添加一个 setTimeout
-    await new Promise((resolve) => setTimeout(resolve, 300)); // 延迟500毫秒
+    // await new Promise((resolve) => setTimeout(resolve, 300)); // 延迟500毫秒
 
-    return {
-        id: `msg-${Date.now()}`,
-        conversationId: conversationId,
-        content: content,
-        isUser: true,
-        timestamp: new Date().toISOString(),
-    };
+    // return {
+    //     id: `msg-${Date.now()}`,
+    //     conversationId: conversationId,
+    //     content: content,
+    //     isUser: true,
+    //     timestamp: new Date().toISOString(),
+    // };
 
-    const res = await apiClient.post<Message>("api/save-message", {
+    const res = await apiClient.post<Message>("/api/messages", {
         content,
         conversationId,
         isUser: true,
@@ -57,25 +60,30 @@ export async function getAiResponse(
     conversationId: string
 ): Promise<Message> {
     // 为了模拟网络延迟，你可以添加一个 setTimeout
-    await new Promise((resolve) => setTimeout(resolve, 1000)); // 延迟500毫秒
+    // await new Promise((resolve) => setTimeout(resolve, 1000)); // 延迟500毫秒
 
-    return {
-        id: `msg-${Date.now()}`,
-        conversationId: conversationId,
-        content: `这是AI的模拟回复, 对于${userInput}`,
-        isUser: false,
-        timestamp: new Date().toISOString(),
-    };
+    // return {
+    //     id: `msg-${Date.now()}`,
+    //     conversationId: conversationId,
+    //     content: `这是AI的模拟回复, 对于${userInput}`,
+    //     isUser: false,
+    //     timestamp: new Date().toISOString(),
+    // };
 
-    const res = await apiClient.post<Message>("/api/get-ai-response", {
+    const { user} = useAuth();
+    const userId = user!.id;
+
+    const res = await apiClient.post<Message>("/api/ai/response", {
         userInput,
         conversationId,
+        userId
     });
 
     return res.data;
 }
 
 // 创建新对话， 然后让ai生成第一条回复。 再返回对话id
+//TODO 这个有点难，再看看改不改
 interface CreateConversationResponse {
     conversationId: string;
 }

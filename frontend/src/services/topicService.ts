@@ -5,50 +5,55 @@ import apiClient from "./api";
 export const getPredefinedTopics = async (): Promise<
     Record<string, string[]>
 > => {
-    const PREDEFINED_TOPICS = {
-        "Daily Life": [
-            "Ordering coffee",
-            "Talking about the weather",
-            "Making plans for the weekend",
-            "Grocery shopping",
-        ],
-        "Work & Career": [
-            "Preparing for a job interview",
-            "Discussing a project with a colleague",
-            "Asking for a raise",
-        ],
-        Travel: [
-            "Booking a hotel room",
-            "Asking for directions",
-            "Checking in at the airport",
-            "Sharing travel experiences",
-        ],
-        Hobbies: [
-            "Talking about your favorite movie",
-            "Discussing a book you've read",
-            "Planning a hiking trip",
-        ],
-    };
+    // const PREDEFINED_TOPICS = {
+    //     "Daily Life": [
+    //         "Ordering coffee",
+    //         "Talking about the weather",
+    //         "Making plans for the weekend",
+    //         "Grocery shopping",
+    //     ],
+    //     "Work & Career": [
+    //         "Preparing for a job interview",
+    //         "Discussing a project with a colleague",
+    //         "Asking for a raise",
+    //     ],
+    //     Travel: [
+    //         "Booking a hotel room",
+    //         "Asking for directions",
+    //         "Checking in at the airport",
+    //         "Sharing travel experiences",
+    //     ],
+    //     Hobbies: [
+    //         "Talking about your favorite movie",
+    //         "Discussing a book you've read",
+    //         "Planning a hiking trip",
+    //     ],
+    // };
     console.log("Fetching predefined topics...");
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    return PREDEFINED_TOPICS;
+
+    const res = await apiClient.get<Record<string, string[]>>(
+        "/api/topics/predefined"
+    );
+
+    return res.data;
+
 };
 
 export const generateTopics = async (prompt?: string): Promise<string[]> => {
     console.log(`Generating topics with prompt: "${prompt || "random"}"`);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    if (prompt) {
-        return [
-            `Discussing "${prompt}" on a podcast`,
-            `Debating the pros and cons of "${prompt}"`,
-            `How to explain "${prompt}" to a 5-year-old`,
-        ];
-    }
-    return [
-        "A surprising discovery in the attic",
-        "Planning a surprise party",
-        "A memorable dream you had",
-    ];
+    // await new Promise((resolve) => setTimeout(resolve, 1500));
+    // if (prompt) {
+    //     return [
+    //         `Discussing "${prompt}" on a podcast`,
+    //         `Debating the pros and cons of "${prompt}"`,
+    //         `How to explain "${prompt}" to a 5-year-old`,
+    //     ];
+    // }
+    // return [
+    //     "A surprising discovery in the attic",
+    //     "Planning a surprise party",
+    //     "A memorable dream you had",
+    // ];
 
     // 真实api调用
     // 要求返回三个字符串的数组 string[]，  当prompt 不为空， 返回相应话题， 为空返回随机话题
@@ -61,7 +66,7 @@ export const generateTopics = async (prompt?: string): Promise<string[]> => {
     //     ]
     // }
     try {
-        const res = await apiClient.post<{ topics: string[] }>("/api/topics", {
+        const res = await apiClient.post<{ topics: string[] }>("/api/topics/generate", {
             prompt: prompt || "",
         });
 
