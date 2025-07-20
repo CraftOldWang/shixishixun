@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import type{ Character, Conversation } from "../types";
+import type{ Character } from "../types";
 import {generateTopics, getPredefinedTopics,createConversation} from "../services/topicService";
 import TopicCard, {Spinner} from "../components/TopicCard";
 import { fetchSingleCharacterById } from "../services/characterService";

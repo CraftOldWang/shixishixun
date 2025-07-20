@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { User } from "../types/index";
+import { Settings } from "lucide-react";
 
 interface NavBarProps {
     currentUser: User;
@@ -51,10 +52,12 @@ const NavBar: React.FC<NavBarProps> = ({ currentUser, onLogout }) => {
                 </div>
                 <div className="flex items-center space-x-4">
                     <button
+                        aria-label="setting"
                         type="button"
                         className="text-gray-500 hover:text-gray-800"
                     >
-                        ⚙️
+                        {/* TODO要做这个吗？ */}
+                        <Settings className="w-5 h-5" />
                     </button>
                     <div className="relative group">
                         <button
@@ -66,7 +69,7 @@ const NavBar: React.FC<NavBarProps> = ({ currentUser, onLogout }) => {
                             </span>
                             {/* 暂时不考虑给用户添加头像 */}
                             <img
-                                src={`https://i.pravatar.cc/150?u=${currentUser.id}`}
+                                src={`https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTRR-BzFOrymJ6oS1w1T2N_OdQ4U-H-hmZdTB_DebBCv2MDNHsMKxjsnVtf&s`}
                                 alt="avatar"
                                 className="h-9 w-9 rounded-full object-cover"
                             />

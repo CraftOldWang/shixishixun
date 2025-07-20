@@ -4,12 +4,12 @@ import Navbar from "../components/WordCardNavbar";
 import { useNavigate } from "react-router-dom";
 import { X, ArrowLeft, Search, Plus } from "lucide-react";
 import type { Wordcard } from "../types";
+import { useAuth } from "../contexts/AuthContext";
 
 const WordBookPage = () => {
-    const [currentUser, setCurrentUser] = useState({
-        id: "user-123",
-        username: "Alice",
-    });
+
+    const { user: currentUser } = useAuth();
+    console.log(currentUser);
 
     const [wordCards, setWordCards] = useState<Wordcard[]>([]);
     const [filteredCards, setFilteredCards] = useState<Wordcard[]>([]);
@@ -123,7 +123,7 @@ const WordBookPage = () => {
     return (
         <div className="min-h-screen bg-gradient-to-b from-blue-50 to-purple-50 flex flex-col">
             {/* Navbar */}
-            <Navbar currentUser={currentUser} onLogout={handleLogout} />
+            <Navbar currentUser={currentUser!} onLogout={handleLogout} />
             
             {/* 删除确认弹窗 */}
             {showDeleteConfirmation && (

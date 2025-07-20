@@ -4,11 +4,11 @@ import React, { type FC } from "react";
 interface AddCharacterCardProps {
     onClick: () => void;
 }
-
+ 
 const AddCharacterCard: FC<AddCharacterCardProps> = ({ onClick }) => (
     <div
         onClick={onClick}
-        className="h-80 w-64 group bg-white rounded-xl shadow-md overflow-hidden cursor-pointer transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center h-full"
+        className="h-80 w-64 group bg-white rounded-xl shadow-md overflow-hidden cursor-pointer transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center"
     >
         <div className="flex flex-col items-center justify-center p-8 text-center">
             <div className="bg-blue-100 rounded-full p-4 mb-3">
