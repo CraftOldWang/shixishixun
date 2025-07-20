@@ -33,13 +33,14 @@ const RegisterPage = () => {
         // 1. 整体页面容器
         // - 使用与登录页完全相同的样式，确保视觉一致性
         <div
-            className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-300 via-purple-100 to-pink-200 p-4"
-            // 【背景图片】如果你想添加背景图片，可以取消下面的 style 注释，并换上你的图片URL
-            // style={{
-            //   backgroundImage: `url('你的背景图片URL')`,
-            //   backgroundSize: 'cover',
-            //   backgroundPosition: 'center',
-            // }}
+            className="min-h-screen flex items-center justify-center  p-4"
+            style={{
+                backgroundImage: `url('https://p.upyun.com/demo/tmp/RcUWWrIQ.webp'),
+      linear-gradient(to bottom right, #818cf8, #e0d7ff, #f9d5e5)
+    `,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+            }}
         >
             {/* 2. 注册表单卡片 */}
             {/* - 同样采用 w-full max-w-md, bg-white, rounded-xl, shadow-lg, p-8 等样式 */}
