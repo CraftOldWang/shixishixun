@@ -33,8 +33,18 @@ DASHSCOPE_API_KEY=your_dashscope_api_key
 DATABASE_URL=sqlite:///./app.db
 ```
 
-3. 运行应用
+3. 初始化数据库
 ```bash
+# 单独初始化数据库（不启动应用）
+python init_database.py
+```
+
+4. 运行应用
+```bash
+# 方法1: 使用run.py脚本（推荐，会自动创建数据库表和初始化数据）
+python run.py
+
+# 方法2: 直接使用uvicorn（需要手动确保数据库已初始化）
 uvicorn app.main:app --reload
 ```
 
