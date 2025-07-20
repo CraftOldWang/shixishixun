@@ -8,7 +8,7 @@ import { useAuth } from "../contexts/AuthContext";
 
 const WordBookPage = () => {
 
-    const { user: currentUser } = useAuth();
+    const { user: currentUser, logout } = useAuth();
     console.log(currentUser);
 
     const [wordCards, setWordCards] = useState<Wordcard[]>([]);
@@ -117,6 +117,7 @@ const WordBookPage = () => {
     };
 
     const handleLogout = () => {
+        logout(); //
         navigate("/login");
     };
 
