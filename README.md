@@ -78,6 +78,11 @@ cp env.example app.env
 # 编辑环境变量文件，填入你的API密钥等信息
 ```
 
+5. 创建数据库
+```bash
+python scripts/init_db.py
+```
+
 ## 如何启动
 
 ### 1. 启动后端API服务
