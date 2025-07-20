@@ -39,6 +39,6 @@ export const getMe = async (): Promise<User> => {
         username:"Akkarin"
     }
 
-    const response = await apiClient.get<User>("/users/me");
+    const response = await apiClient.get<User>("/auth/me");
     return response.data;
 };

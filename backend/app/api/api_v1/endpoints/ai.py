@@ -36,7 +36,7 @@ def fetch_ai_options(request: AiOptionsRequest, db: Session = Depends(get_db)) -
     
     return AiOptionsResponse(options=options)
 
-@router.post("/get-ai-response", response_model=Dict[str, Any])
+@router.post("/response", response_model=Dict[str, Any])
 def fetch_ai_response(request: AiResponseRequest, db: Session = Depends(get_db)) -> Any:
     """获取AI回复"""
     # 检查对话是否存在

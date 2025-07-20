@@ -30,25 +30,43 @@ def get_default_characters(db: Session = Depends(get_db)) -> Any:
     
     return result
 
-@router.get("/user", response_model=List[CharacterWithTags])
+@router.get("/characters/users/{user_id}", response_model=List[CharacterWithTags])
 def get_user_characters(user_id: str, db: Session = Depends(get_db)) -> Any:
-    """获取用户创建的角色"""
-    characters = db.query(Character).filter(Character.created_by == user_id).all()
+    """获取指定用户创建的角色列表
+    
+    参数:
+        - user_id: 用户ID
+        
+    返回数据格式：
+    [{
+        "id": string,
+        "name": string,
+        "description": string,
+        "avatarUrl": string,
+        "isDefault": boolean,
+        "tags": string[]
+    }]
+    """
+    # 获取用户创建的所有角色
+    characters = db.query(Character).filter(
+        Character.created_by == user_id,
+        Character.is_default == False  # 只获取用户创建的非默认角色
+    ).all()
     
     result = []
     for character in characters:
         # 获取角色的标签
         tags = [tag.tag for tag in character.tags]
         
-        # 构建响应
-        result.append(CharacterWithTags(
-            id=character.id,
-            name=character.name,
-            description=character.description,
-            avatar=character.avatar_url,
-            isDefault=character.is_default,
-            tags=tags,
-        ))
+        # 构建响应，确保字段名称与前端一致
+        result.append({
+            "id": str(character.id),  # 确保ID是字符串类型
+            "name": character.name,
+            "description": character.description,
+            "avatarUrl": character.avatar_url,  # 修改为avatarUrl以匹配前端
+            "isDefault": character.is_default,
+            "tags": tags
+        })
     
     return result
 
