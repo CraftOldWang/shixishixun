@@ -78,20 +78,18 @@ cp env.example app.env
 # 编辑环境变量文件，填入你的API密钥等信息
 ```
 
-5. 创建数据库
+5. 初始化数据库
 ```bash
-python scripts/init_db.py
+python init_db.py
 ```
+
 
 ## 如何启动
 
 ### 1. 启动后端API服务
 
 ```bash
-# 使用测试版API
-uvicorn test_app:app --reload
-
-# 或使用完整版API
+# 使用完整版API
 uvicorn main:app --reload
 ```
 
@@ -113,51 +111,35 @@ npm run dev
 
 ## API接口说明
 
-### 获取角色列表
+### **AI 交互模块**
 
-```
-GET /characters
-```
+1. `POST /api/ai/options` - 获取 AI 追问建议
+2. `POST /api/messages` - 保存用户消息
+3. `POST /api/ai/response` - 获取 AI 回复（建议流式响应）
 
-### 开始对话
+### **角色管理模块**
 
-```
-POST /chat
-{
-  "message": "用户消息",
-  "character": "角色名称"
-}
-```
+1. `GET /api/characters/default` - 获取所有默认角色
+2. `GET /api/characters/user` - 获取用户自定义角色
+3. `GET /api/characters/{characterId}` - 获取单个角色详情
 
-### 选择选项
+### **对话管理模块**
 
-```
-POST /select_option
-{
-  "selected_option": 0,  // 选项索引（0-2）
-  "conversation_id": "会话ID"
-}
-```
+1. `GET /api/conversations/{conversationId}` - 获取对话元信息
+2. `GET /api/conversations/{conversationId}/messages` - 获取消息列表
+3. `GET /api/characters/{characterId}/conversations` - 获取角色历史对话
+4. `POST /api/conversations` - 创建新对话（含自动生成首条消息）
 
-## 语法错误类型
+### **话题生成模块**
 
-应用包含多种英语语法错误类型的练习，包括：
+1. `GET /api/topics/predefined` - 获取预定义话题
+2. `POST /api/topics/generate` - AI 生成话题建议
 
-1. 时态错误
-2. 主谓一致
-3. 冠词使用
-4. 介词使用
-5. 比较级
-6. 情态动词
-7. 不定式
-8. 被动语态
-9. 条件句
-10. 代词
-11. 动名词
-12. 数量词
-13. 形容词副词
-14. 连词
-15. 名词单复数
+### **用户认证模块**
+
+1. `POST /api/auth/register` - 用户注册（JSON 请求）
+2. `POST /api/auth/login` - 用户登录（x-www-form-urlencoded）
+3. `GET /api/users/me` - 获取当前用户信息
 
 ## 贡献指南
 

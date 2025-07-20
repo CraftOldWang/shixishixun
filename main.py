@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from api.routes import conversation, characters, users, learning
+from api.routes import conversation, characters, users, learning, ai, auth, topics
 
 app = FastAPI(
     title="二次元AI英语学习助手",
@@ -22,6 +22,9 @@ app.include_router(conversation.router)
 app.include_router(characters.router)
 app.include_router(users.router)
 app.include_router(learning.router)
+app.include_router(ai.router)
+app.include_router(auth.router)
+app.include_router(topics.router)
 
 @app.get("/")
 async def root():

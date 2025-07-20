@@ -8,12 +8,12 @@ from schemas.schemas import CharacterCreate, CharacterResponse
 from core.auth import get_current_active_user
 
 router = APIRouter(
-    prefix="/characters",
+    prefix="/api/characters",
     tags=["characters"],
     responses={404: {"description": "Not found"}},
 )
 
-@router.get("/", response_model=List[CharacterResponse])
+@router.get("/default", response_model=List[CharacterResponse])
 def get_characters(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     """获取所有角色列表"""
     characters = db.query(Character).offset(skip).limit(limit).all()

@@ -10,7 +10,7 @@ from core.auth import get_current_active_user
 from services.conversation_service import CharacterConversationService
 
 router = APIRouter(
-    prefix="/conversations",
+    prefix="/api/conversations",
     tags=["conversations"],
     responses={404: {"description": "Not found"}},
 )
