@@ -1,4 +1,5 @@
 import type { Message } from "../types";
+import apiClient from "./api";
 
 export const fetchAiOptions = async (replyText: string): Promise<string[]> => {
     // 为了模拟网络延迟，你可以添加一个 setTimeout
@@ -11,19 +12,14 @@ export const fetchAiOptions = async (replyText: string): Promise<string[]> => {
     return mockAiOptions;
 
     try {
-        const res = await fetch("/api/get-ai-options", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ reply: replyText }),
+        const res = await apiClient.post("/api/get-ai-options", {
+            reply: replyText,
         });
         // 期待后端返回
         // {
         //     "options": ["xxx1", "xxx2", "xxx3"]
         // }
-        const data = await res.json();
-        return data.options;
+        return res.data.options;
     } catch (err) {
         console.error("获取AI推荐问题失败", err);
         return [];
@@ -37,7 +33,7 @@ export async function saveUserMessage(
 ): Promise<Message> {
     // 模拟数据， 真实的 api， 时间要从 后台取什么的。...
     // 为了模拟网络延迟，你可以添加一个 setTimeout
-    await new Promise((resolve) => setTimeout(resolve, 2000)); // 延迟500毫秒
+    await new Promise((resolve) => setTimeout(resolve, 300)); // 延迟500毫秒
 
     return {
         id: `msg-${Date.now()}`,
@@ -47,13 +43,12 @@ export async function saveUserMessage(
         timestamp: new Date().toISOString(),
     };
 
-    const res = await fetch("/api/save-message", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content, conversationId, isUser: true }),
+    const res = await apiClient.post<Message>("api/save-message", {
+        content,
+        conversationId,
+        isUser: true,
     });
-    if (!res.ok) throw new Error("保存消息失败");
-    return res.json();
+    return res.data;
 }
 
 // 获取AI回复接口
@@ -62,7 +57,7 @@ export async function getAiResponse(
     conversationId: string
 ): Promise<Message> {
     // 为了模拟网络延迟，你可以添加一个 setTimeout
-    await new Promise((resolve) => setTimeout(resolve, 4000)); // 延迟500毫秒
+    await new Promise((resolve) => setTimeout(resolve, 1000)); // 延迟500毫秒
 
     return {
         id: `msg-${Date.now()}`,
@@ -72,11 +67,35 @@ export async function getAiResponse(
         timestamp: new Date().toISOString(),
     };
 
-    const res = await fetch("/api/get-ai-response", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userInput, conversationId }),
+    const res = await apiClient.post<Message>("/api/get-ai-response", {
+        userInput,
+        conversationId,
     });
-    if (!res.ok) throw new Error("获取AI回复失败");
-    return res.json();
+
+    return res.data;
 }
+
+// 创建新对话， 然后让ai生成第一条回复。 再返回对话id
+interface CreateConversationResponse {
+    conversationId: string;
+}
+export const createConversation = async (
+    characterId: string,
+    topic: string
+): Promise<string> => {
+    console.log(
+        `Creating conversation for character ${characterId} with topic: "${topic}"`
+    );
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    return `conv_${Date.now()}`;
+
+    const res = await apiClient.post<CreateConversationResponse>(
+        "/api/conversation/create",
+        {
+            characterId,
+            topic,
+        }
+    );
+    return res.data.conversationId;
+};

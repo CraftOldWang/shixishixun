@@ -15,7 +15,12 @@ import {
     getMessagesByConversationId,
 } from "../services/conversationService";
 import { fetchSingleCharacterById } from "../services/characterService";
-import { fetchWordDefinition } from "../services/wordService";
+import {
+    addFavorite,
+    checkIfFavorited,
+    fetchWordDefinition,
+    removeFavorite,
+} from "../services/wordService";
 import {
     fetchAiOptions,
     getAiResponse,
@@ -39,15 +44,28 @@ const WordDefinitionPopup: React.FC<{
         setIsLoading(true);
         setData(null);
         setIsFavorited(false); // 每次新词取消收藏状态（根据你需要可保留）
-        fetchWordDefinition(word).then((res) => {
-            setData(res);
+
+        // 同时请求词义 和 收藏状态
+        Promise.all([
+            fetchWordDefinition(word),
+            checkIfFavorited(word), // 👈 加这个
+        ]).then(([def, favorited]) => {
+            setData(def);
+            setIsFavorited(favorited);
             setIsLoading(false);
         });
     }, [word]);
 
-    const toggleFavorite = () => {
-        setIsFavorited((prev) => !prev);
-        // 你可以在这里添加保存收藏到后端或本地的逻辑
+    const toggleFavorite = async () => {
+        const newState = !isFavorited;
+        setIsFavorited(newState);
+
+        try {
+            newState ? await addFavorite(word) : await removeFavorite(word);
+        } catch (err) {
+            console.error(err);
+            setIsFavorited(!newState);
+        }
     };
 
     return (

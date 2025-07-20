@@ -1,4 +1,4 @@
-import api from "./api";
+import apiClient from "./api";
 import type { Conversation, Message, Character } from "../types";
 
 
@@ -24,7 +24,7 @@ export const getConversationWithoutMessages = async (
 
     //2. 真实api调用
     try {
-        const response = await api.get(`/conversations/${conversationId}`);
+        const response = await apiClient.get<Conversation>(`/conversations/${conversationId}`);
         return response.data;
     } catch (error) {
         console.error("获取对话详情失败:", error);
@@ -70,7 +70,7 @@ export const getMessagesByConversationId = async (
 
     //2. 调用api
     try {
-        const response = await api.get(
+        const response = await apiClient.get(
             `/conversations/${conversationId}/messages`
         );
         return response.data;
@@ -118,7 +118,7 @@ export async function fetchConversationsByCharacter(
     );
 
     //2. 调用api
-    const response = await api.get(`/api/characters/sessions/${characterId}`);
+    const response = await apiClient.get(`/api/characters/sessions/${characterId}`);
     return response.data
         .map(
             (item: any): Conversation => ({

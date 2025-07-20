@@ -1,4 +1,5 @@
 import type { Character, Conversation } from "../types"; // 假设你的类型定义在 '
+import apiClient from "./api";
 
 // TODO 这里的预定义话题需要存在后端， 不过也需要自己想想可以有什么话题 。 其实存前端也行。。。。。
 export const getPredefinedTopics = async (): Promise<
@@ -60,44 +61,13 @@ export const generateTopics = async (prompt?: string): Promise<string[]> => {
     //     ]
     // }
     try {
-        const response = await fetch("/api/topics", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ prompt: prompt || "" }),
+        const res = await apiClient.post<{ topics: string[] }>("/api/topics", {
+            prompt: prompt || "",
         });
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        return data.topics; // 假设返回 { topics: [...] }
+        return res.data.topics;
     } catch (error) {
         console.error("Failed to generate topics:", error);
         return [];
     }
-};
-
-// 需要在后端创建 新的conversation 、 让ai来第一条回复、然后进入这个conversation
-//TODO 还没写
-export const createConversation = async (
-    characterId: string,
-    topic: string
-): Promise<Conversation> => {
-    console.log(
-        `Creating conversation for character ${characterId} with topic: "${topic}"`
-    );
-    await new Promise((resolve) => setTimeout(resolve, 800));
-
-    return {
-        id: `conv_${Date.now()}`,
-        characterId,
-        userId: "user-123",
-        title: topic,
-        topic,
-        summary: `A new conversation about ${topic}.`,
-        updatedAt: new Date().toISOString(),
-    };
 };

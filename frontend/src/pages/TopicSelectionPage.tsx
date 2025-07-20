@@ -1,15 +1,42 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import type{ Character } from "../types";
-import {generateTopics, getPredefinedTopics,createConversation} from "../services/topicService";
-import TopicCard, {Spinner} from "../components/TopicCard";
+import type { Character } from "../types";
+import { generateTopics, getPredefinedTopics } from "../services/topicService";
+import {createConversation} from "../services/aiService"
+import TopicCard, { Spinner } from "../components/TopicCard";
 import { fetchSingleCharacterById } from "../services/characterService";
 
 // TODO 前端最后一个逻辑
 // 选完话题应当先把场景之类的发给AI，让其生成第一句话...
 // 这样的话， 就可以把旧对话和新对话的处理逻辑合并了。
 
-
+interface SpinnerProps {
+    className?: string;
+}
+const Spinner2: React.FC<SpinnerProps> = ({ className = "w-6 h-6" }) => {
+    return (
+        <svg
+            className={`animate-spin text-gray-600 dark:text-gray-300 ${className}`}
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+        >
+            <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+            ></circle>
+            <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+            ></path>
+        </svg>
+    );
+};
 
 const TopicSelectionPage = () => {
     const { characterId } = useParams<{ characterId: string }>();
@@ -26,10 +53,13 @@ const TopicSelectionPage = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [isGenerating, setIsGenerating] = useState(false);
     const [isCreating, setIsCreating] = useState<string | null>(null); // 存储正在创建的话题
+    const [isCreatingConversation, setIsCreatingConversation] =
+        useState<boolean>(false);
 
     // 初始化加载数据
     useEffect(() => {
-        if (!characterId) { // 一般来说不可能是这个情况
+        if (!characterId) {
+            // 一般来说不可能是这个情况
             // 如果没有characterId，可能是URL错误，跳转回首页
             navigate("/");
             return;
@@ -73,15 +103,15 @@ const TopicSelectionPage = () => {
     const handleTopicSelect = async (topic: string) => {
         if (!characterId) return;
         setIsCreating(topic);
+        setIsCreatingConversation(true);
         try {
-            const newConversation = await createConversation(
-                characterId,
-                topic
-            );
-            navigate(`/chat/${newConversation.id}`);
+            const convId: string = await createConversation(characterId, topic);
+            setIsCreatingConversation(false);
+            navigate(`/chat/${convId}`);
         } catch (error) {
             console.error("Failed to create conversation:", error);
             setIsCreating(null);
+            setIsCreatingConversation(false);
         }
     };
 
@@ -191,10 +221,20 @@ const TopicSelectionPage = () => {
                         ))}
                     </div>
                 </div>
+
+                {isCreatingConversation && (
+                    <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-white dark:bg-gray-800 rounded-2xl p-12 text-center shadow-2xl w-[90%] max-w-md">
+                            <Spinner2 className="w-16 h-16 text-blue-500 mx-auto mb-6" />
+                            <p className="text-2xl font-bold text-gray-800 dark:text-gray-200">
+                                会话创建中...
+                            </p>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
 };
-
 
 export default TopicSelectionPage;
