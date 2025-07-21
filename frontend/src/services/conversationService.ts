@@ -2,8 +2,6 @@ import apiClient from "./api";
 import type { Conversation, Message, Character } from "../types";
 import { useAuth } from "../contexts/AuthContext";
 
-
-
 // 获取特定对话, 不带message(为了复用，带message就有点大了)
 export const getConversationWithoutMessages = async (
     conversationId: string
@@ -25,8 +23,20 @@ export const getConversationWithoutMessages = async (
 
     //2. 真实api调用
     try {
-        const response = await apiClient.get<Conversation>(`/api/conversations/${conversationId}`);
-        return response.data;
+        const response = await apiClient.get(
+            `/api/conversations/${conversationId}`
+        );
+        const data = response.data;
+        return {
+            id: data.id,
+            characterId: data.character_id,
+            userId: data.user_id,
+            title: data.title,
+            topic: data.topic,
+            summary: data.summary,
+            updatedAt: data.updated_at,
+            backgroundUrl: data.background_url,
+        };
     } catch (error) {
         console.error("获取对话详情失败:", error);
         throw error;
@@ -81,12 +91,11 @@ export const getMessagesByConversationId = async (
     }
 };
 
-
 // 获取某角色的所有历史会话 , 按时间降序排序(新的在数组的前面)。
 // 同样不带messages
 export async function fetchConversationsByCharacter(
     characterId: string,
-    userId:string
+    userId: string
 ): Promise<Conversation[]> {
     // 1. 假数据， 调api时记得注释掉。
     // console.log(`Fetching history for character ${characterId}...`);
@@ -120,7 +129,9 @@ export async function fetchConversationsByCharacter(
     // );
 
     //2. 调用api
-    const response = await apiClient.get(`/api/characters/sessions/${characterId}?user_id=${userId}`);
+    const response = await apiClient.get(
+        `/api/characters/sessions/${characterId}?user_id=${userId}`
+    );
     return response.data
         .map(
             (item: any): Conversation => ({
@@ -149,23 +160,23 @@ export async function fetchConversationsByUser(
     console.log(`Fetching history for user ${userId}...`);
     return [
         {
-                        id: "conv-1",
-                        characterId: "char-1",
-                        userId: "user-1",
-                        title: "探讨宇宙的起源",
-                        topic: "科学",
-                        summary: "关于大爆炸理论的一些初步讨论...",
-                        updatedAt: "2025-07-15",
-                    },
-                    {
-                        id: "conv-2",
-                        characterId: "char-1",
-                        userId: "user-1",
-                        title: "如何烤出完美的披萨",
-                        topic: "烹饪",
-                        summary: "从面团发酵到烤箱温度的精确控制...",
-                        updatedAt: "2025-07-12",
-                    },
+            id: "conv-1",
+            characterId: "char-1",
+            userId: "user-1",
+            title: "探讨宇宙的起源",
+            topic: "科学",
+            summary: "关于大爆炸理论的一些初步讨论...",
+            updatedAt: "2025-07-15",
+        },
+        {
+            id: "conv-2",
+            characterId: "char-1",
+            userId: "user-1",
+            title: "如何烤出完美的披萨",
+            topic: "烹饪",
+            summary: "从面团发酵到烤箱温度的精确控制...",
+            updatedAt: "2025-07-12",
+        },
     ];
 
     // 为了模拟网络延迟，你可以添加一个 setTimeout
@@ -182,7 +193,7 @@ export async function fetchConversationsByUser(
                 summary: item.summary,
                 updatedAt: item.timestamp, // timestamp -> updatedAt 映射
                 characterId: item.characterId, // 从参数中补全
-                userId: userId, 
+                userId: userId,
             })
         )
         .sort(

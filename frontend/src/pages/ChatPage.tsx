@@ -40,7 +40,7 @@ const WordDefinitionPopup: React.FC<{
     const [data, setData] = useState<Partial<Wordcard> | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isFavorited, setIsFavorited] = useState(false); // 收藏状态
-    const {user} = useAuth();
+    const { user } = useAuth();
     useEffect(() => {
         setIsLoading(true);
         setData(null);
@@ -49,7 +49,7 @@ const WordDefinitionPopup: React.FC<{
         // 同时请求词义 和 收藏状态
         Promise.all([
             fetchWordDefinition(word),
-            checkIfFavorited(word,user!.id), // 👈 加这个
+            checkIfFavorited(word, user!.id), // 👈 加这个
         ]).then(([def, favorited]) => {
             setData(def);
             setIsFavorited(favorited);
@@ -300,12 +300,18 @@ export default function ChatPage() {
                     conversationId
                 );
                 setConversation(conv);
+                console.log("对话")
+                console.log(conv);
 
                 // 这个貌似可以跟下面获取角色信息...并发执行。。不过不管了
                 const msg = await getMessagesByConversationId(conversationId);
                 setMessages(msg);
+                console.log("消息数组")
+
+                console.log(msg);
 
                 // 获取角色信息
+                console.log("角色ID", conv.characterId);
                 const char = await fetchSingleCharacterById(conv.characterId);
                 setCharacter(char);
             } catch (err) {
