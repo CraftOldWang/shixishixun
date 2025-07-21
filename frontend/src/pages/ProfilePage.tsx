@@ -70,7 +70,7 @@ const ProfilePage = () => {
   // 处理退出登录
   const handleLogout = () => {
     // 模拟退出登录逻辑
-    localStorage.removeItem("token");
+    logout();
     navigate("/login");
   };
   

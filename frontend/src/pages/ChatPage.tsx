@@ -62,7 +62,7 @@ const WordDefinitionPopup: React.FC<{
         setIsFavorited(newState);
 
         try {
-            newState ? await addFavorite(word) : await removeFavorite(word);
+            newState ? await addFavorite(word, user!.id) : await removeFavorite(word, user!.id);
         } catch (err) {
             console.error(err);
             setIsFavorited(!newState);
@@ -162,7 +162,7 @@ const ConversationSidebar: React.FC<{
             </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {!isCollapsed &&
-                    messages.map((msg) => (
+                    messages!.map((msg) => (
                         <div
                             key={msg.id}
                             className={`p-3 rounded-lg ${
@@ -350,7 +350,7 @@ export default function ChatPage() {
             try {
                 const options = await fetchAiOptions(
                     currentCharacterReply.content,
-                    conversationId
+                    conversationId!
                 );
                 if (Array.isArray(options)) {
                     setAiOptions(options.slice(0, 3));

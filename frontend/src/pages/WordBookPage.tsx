@@ -65,7 +65,7 @@ const WordBookPage = () => {
         if (!wordCard) return;
 
         // 调用 API 删除收藏
-        await removeFavorite(wordCard.word);
+        await removeFavorite(wordCard.word, currentUser.id);
         
         // 本地更新状态
         setWordCards(prev => prev.filter(card => card.id !== wordToDelete));

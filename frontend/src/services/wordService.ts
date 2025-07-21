@@ -60,23 +60,24 @@ export const checkIfFavorited = async (
 };
 
 // 增加收藏
-export const addFavorite = async (word: string) => {
-    // 模拟， 不与后端交互
+export const addFavorite = async (word: string, userId: string) => {
+    /*
     await new Promise((resolve) => setTimeout(resolve, 500));
     return "";
+    */
     // 真实
-    const res = await apiClient.post("/api/favorites/add", { word });
+    const res = await apiClient.post( `/api/favorites/add?user_id=${userId}&word=${word}`);
     return res.data;
 };
 
 // 去除收藏
-export const removeFavorite = async (word: string) => {
-    // 模拟， 不与后端交互
+export const removeFavorite = async (word: string, userId: string) => {
+    /*
     await new Promise((resolve) => setTimeout(resolve, 500));
     return "";
-
+    */
     // 真实
-    const res = await apiClient.post("/api/favorites/remove", { word });
+    const res = await apiClient.post( `/api/favorites/remove?user_id=${userId}&word=${word}`);
     return res.data;
 };
 

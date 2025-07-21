@@ -156,7 +156,7 @@ export async function fetchConversationsByCharacter(
 export async function fetchConversationsByUser(
     userId: string
 ): Promise<Conversation[]> {
-    // 1. 假数据， 调api时记得注释掉。
+    /*
     console.log(`Fetching history for user ${userId}...`);
     return [
         {
@@ -181,7 +181,7 @@ export async function fetchConversationsByUser(
 
     // 为了模拟网络延迟，你可以添加一个 setTimeout
     await new Promise((resolve) => setTimeout(resolve, 500)); // 延迟500毫秒
-
+    */
     //2. 调用api
     const response = await apiClient.get(`/api/conversation/user/${userId}`);
     return response.data
