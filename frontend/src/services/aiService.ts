@@ -58,7 +58,7 @@ export async function saveUserMessage(
 export async function getAiResponse(
     userInput: string,
     conversationId: string
-): Promise<Message> {
+): Promise<{ message: Message; conversationTitle?: string }> {
     // 为了模拟网络延迟，你可以添加一个 setTimeout
     // await new Promise((resolve) => setTimeout(resolve, 1000)); // 延迟500毫秒
 
@@ -77,12 +77,16 @@ export async function getAiResponse(
     });
     // console.log(res.data);
     const data = res.data;
+    console.log(data);
     return {
-        id: data.id,
-        conversationId: conversationId,
-        content: data.content,
-        isUser: data.isUser,
-        timestamp: data.timestamp,
+        message: {
+            id: data.id,
+            conversationId: conversationId,
+            content: data.content,
+            isUser: data.isUser,
+            timestamp: data.timestamp,
+        },
+        conversationTitle: data.conversationTitle,
     };
 }
 
@@ -104,12 +108,9 @@ export const createConversation = async (
     // return `conv_${Date.now()}`;
     console.log("尝试创建对话");
 
-    const res = await apiClient.post(
-        `/api/conversations/?user_id=${userId}`,
-        {
-            character_id: characterId,
-            topic,
-        }
-    );
+    const res = await apiClient.post(`/api/conversations/?user_id=${userId}`, {
+        character_id: characterId,
+        topic,
+    });
     return res.data.id;
 };

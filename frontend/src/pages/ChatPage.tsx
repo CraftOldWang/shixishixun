@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Volume2, X, Send, Search, MessageSquare, Menu } from "lucide-react";
 import { Star } from "lucide-react"; // 你可以换成 StarOff 或 Bookmark 等
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useParams } from "react-router-dom";
+import { ChevronLeft, ChevronRight, ArrowLeft } from "lucide-react";
+import { useParams, useNavigate } from "react-router-dom";
 import type {
     User,
     Character,
@@ -62,7 +62,9 @@ const WordDefinitionPopup: React.FC<{
         setIsFavorited(newState);
 
         try {
-            newState ? await addFavorite(word, user!.id) : await removeFavorite(word, user!.id);
+            newState
+                ? await addFavorite(word, user!.id)
+                : await removeFavorite(word, user!.id);
         } catch (err) {
             console.error(err);
             setIsFavorited(!newState);
@@ -348,9 +350,7 @@ export default function ChatPage() {
 
         const fetchOptions = async () => {
             try {
-                const options = await fetchAiOptions(
-                    conversationId!
-                );
+                const options = await fetchAiOptions(conversationId!);
                 if (Array.isArray(options)) {
                     setAiOptions(options.slice(0, 3));
                 } else {
@@ -393,10 +393,24 @@ export default function ChatPage() {
             );
 
             // 调接口获取AI回复
-            const aiResponse = await getAiResponse(content, conversation!.id);
-            console.log("ai回复")
+            const response = await getAiResponse(content, conversation!.id);
+            console.log("ai回复", response);
+
             // 添加AI回复消息
-            setMessages((prev) => [...prev!, aiResponse]);
+            setMessages((prev) => [...prev!, response.message]);
+
+            // 如果返回了新标题，更新对话标题
+            if (response.conversationTitle) {
+                setConversation((prev) => {
+                    if (prev) {
+                        return {
+                            ...prev,
+                            title: response.conversationTitle || prev.title,
+                        };
+                    }
+                    return prev;
+                });
+            }
         } catch (err) {
             console.error("消息发送或AI回复失败", err);
             // 这里可做失败提示或回退处理
@@ -420,12 +434,35 @@ export default function ChatPage() {
         if (closeTimer.current) clearTimeout(closeTimer.current);
     };
 
+    const navigate = useNavigate();
+
+    const handleGoBack = () => {
+        navigate("/");
+    };
+
     if (loading) return <div>加载中...</div>;
     if (!conversation || !character) return <div>未找到会话或角色</div>;
 
     return (
         <div className="h-screen w-screen bg-gray-900 font-sans text-white flex relative overflow-hidden">
-            {/* //TODO 此外侧边栏貌似不够大....以及这里用亚克力的话，显示效果似乎不太好 */}
+            {/* 顶部标题栏 */}
+            <div className="absolute top-0 left-0 right-0 z-50 bg-black bg-opacity-50 backdrop-blur-md p-4 flex items-center justify-between">
+                <div className="w-12">
+                    <button
+                        onClick={handleGoBack}
+                        className="p-2 rounded-full hover:bg-gray-700 transition-colors"
+                        title="返回首页"
+                        aria-label="返回首页"
+                    >
+                        <ArrowLeft size={24} />
+                    </button>
+                </div>
+                <h1 className="text-xl font-bold text-center flex-1">
+                    {conversation.title || "对话"}
+                </h1>
+                <div className="w-12"></div> {/* 为了保持标题居中 */}
+            </div>
+
             {/* 侧边栏 */}
             {/* --- part1折叠时显示浮动按钮 --- */}
             {isSidebarCollapsed && (
@@ -467,9 +504,13 @@ export default function ChatPage() {
             </div>  */}
 
             {/* 主内容区 */}
-            <main className="flex-1 flex flex-col relative h-screen">
+            <main className="flex-1 flex flex-col relative h-screen pt-16">
+                {" "}
+                {/* 添加 pt-16 为顶部导航栏留出空间 */}
                 {/* 背景图 */}
-                <div className="absolute inset-0 z-0">
+                <div className="absolute inset-0 z-0 pt-16">
+                    {" "}
+                    {/* 同样添加 pt-16 */}
                     <img
                         src={conversation.backgroundUrl}
                         alt={conversation.topic}
@@ -477,7 +518,6 @@ export default function ChatPage() {
                     />
                     <div className="absolute inset-0 bg-black/30"></div>
                 </div>
-
                 {/* 角色和当前回复面板 */}
                 <div className="relative z-10 flex-1 grid grid-cols-2 gap-6 p-6 overflow-hidden">
                     <div className="flex items-end justify-center">
@@ -495,7 +535,6 @@ export default function ChatPage() {
                         />
                     </div>
                 </div>
-
                 {/* 底部输入区 */}
                 <div className="relative z-20 p-4 bg-black bg-opacity-30 backdrop-blur-md border-t border-gray-700">
                     <div className="max-w-4xl mx-auto">
