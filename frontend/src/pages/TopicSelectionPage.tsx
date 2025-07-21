@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import type { Character } from "../types";
 import { generateTopics, getPredefinedTopics } from "../services/topicService";
-import {createConversation} from "../services/aiService"
+import { createConversation } from "../services/aiService";
 import TopicCard, { Spinner } from "../components/TopicCard";
 import { fetchSingleCharacterById } from "../services/characterService";
+import { useAuth } from "../contexts/AuthContext";
 
 // TODO 前端最后一个逻辑
 // 选完话题应当先把场景之类的发给AI，让其生成第一句话...
@@ -98,6 +99,8 @@ const TopicSelectionPage = () => {
             setIsGenerating(false);
         }
     };
+    const { user } = useAuth();
+    const userId = user!.id;
 
     // 处理话题选择（最终步骤）
     const handleTopicSelect = async (topic: string) => {
@@ -105,7 +108,11 @@ const TopicSelectionPage = () => {
         setIsCreating(topic);
         setIsCreatingConversation(true);
         try {
-            const convId: string = await createConversation(characterId, topic);
+            const convId: string = await createConversation(
+                userId,
+                characterId,
+                topic
+            );
             setIsCreatingConversation(false);
             navigate(`/chat/${convId}`);
         } catch (error) {

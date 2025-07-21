@@ -69,16 +69,21 @@ export async function getAiResponse(
     //     isUser: false,
     //     timestamp: new Date().toISOString(),
     // };
-
-    const { user } = useAuth();
-    const userId = user!.id;
-    console.log({conversationId, userInput})
-    const res = await apiClient.post<Message>("/api/ai/response", {
+    console.log("开始获得 AI回复");
+    console.log({ conversationId, userInput });
+    const res = await apiClient.post("/api/ai/response", {
         conversation_id: conversationId,
         message: userInput,
     });
-
-    return res.data;
+    // console.log(res.data);
+    const data = res.data;
+    return {
+        id: data.id,
+        conversationId: conversationId,
+        content: data.content,
+        isUser: data.isUser,
+        timestamp: data.timestamp,
+    };
 }
 
 // 创建新对话， 然后让ai生成第一条回复。 再返回对话id
@@ -87,6 +92,7 @@ interface CreateConversationResponse {
     conversationId: string;
 }
 export const createConversation = async (
+    userId: string,
     characterId: string,
     topic: string
 ): Promise<string> => {
@@ -96,13 +102,14 @@ export const createConversation = async (
     // await new Promise((resolve) => setTimeout(resolve, 1000));
 
     // return `conv_${Date.now()}`;
+    console.log("尝试创建对话");
 
-    const res = await apiClient.post<CreateConversationResponse>(
-        "/api/conversation/create",
+    const res = await apiClient.post(
+        `/api/conversations/?user_id=${userId}`,
         {
-            characterId,
+            character_id: characterId,
             topic,
         }
     );
-    return res.data.conversationId;
+    return res.data.id;
 };
