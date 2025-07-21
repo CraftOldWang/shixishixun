@@ -41,8 +41,10 @@ export const fetchWordDefinition = async (
     };
 };
 
-export const checkIfFavorited = async (word: string, userId:string): Promise<boolean> => {
-
+export const checkIfFavorited = async (
+    word: string,
+    userId: string
+): Promise<boolean> => {
     // 模拟
     // return false;
 
@@ -80,7 +82,6 @@ export const removeFavorite = async (word: string) => {
 
 // 获取用户所有收藏单词
 export const fetchFavorites = async (userId: string): Promise<Wordcard[]> => {
-
     // 模拟， 不与后端交互
     await new Promise((resolve) => setTimeout(resolve, 500));
     // return [
@@ -111,14 +112,14 @@ export const fetchFavorites = async (userId: string): Promise<Wordcard[]> => {
     //api
     const res = await apiClient.get(`/api/favorites/list?user_id=${userId}`);
     return res.data.map((item: any) => ({
-      id: item.id,
-      userId: item.user_id,
-      word: item.word,
-      pronunciation: item.pronunciation || undefined,
-      pos: item.pos || undefined,
-      context: item.context || undefined,
-      conversationId: item.conversation_id,
-      messageId: item.message_id || undefined,
-      createdAt: item.created_at,
+        id: item.id,
+        userId: item.user_id,
+        word: item.word,
+        pronunciation: item.pronunciation || undefined,
+        pos: item.pos || undefined,
+        context: item.context || undefined,
+        conversationId: item.conversation_id,
+        messageId: item.message_id || undefined,
+        createdAt: item.created_at,
     }));
 };
