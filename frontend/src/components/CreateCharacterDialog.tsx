@@ -1,19 +1,24 @@
 // src/components/CreateCharacterDialog.tsx
 import { useState, type FC } from "react";
 import { X } from "lucide-react";
+import { createCharacter } from "../services/characterService";
+import { useAuth } from "../contexts/AuthContext";
+import type { Character } from "../types";
 
 interface CreateCharacterDialogProps {
   onClose: () => void;
-  onCreate: (character: any) => void;
+  onCreate: (character: Character) => void;
 }
 
 const CreateCharacterDialog: FC<CreateCharacterDialogProps> = ({
   onClose,
   onCreate,
 }) => {
+  const { user:currentUser } = useAuth();
   const [characterData, setCharacterData] = useState({
     name: "",
     description: "",
+    setting: "",
     avatar: "",
     tags: "",
   });
@@ -25,34 +30,44 @@ const CreateCharacterDialog: FC<CreateCharacterDialogProps> = ({
     setCharacterData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // 简单验证
+    // 验证必填字段
     if (!characterData.name.trim()) {
       setError("角色名称不能为空");
+      return;
+    }
+    
+    if (!characterData.description.trim()) {
+      setError("角色描述不能为空");
       return;
     }
     
     setIsLoading(true);
     setError(null);
     
-    // 模拟API请求
-    setTimeout(() => {
-      const newCharacter = {
-        id: `char-${Date.now()}`,
+    try {
+      // 准备请求数据
+      const requestData = {
         name: characterData.name,
         description: characterData.description,
-        avatar: characterData.avatar || 'https://via.placeholder.com/400x260/EFEFEF/AAAAAA?text=No+Image',
-        isDefault: false,
-        createdBy: "current-user-id",
-        tags: characterData.tags ? characterData.tags.split(',').map(tag => tag.trim()) : [],
+        tags: characterData.tags ? 
+              characterData.tags.split(',').map(tag => tag.trim()) : 
+              [],
       };
       
+      // 调用API创建角色
+      const newCharacter = await createCharacter(currentUser?.id,requestData);
+      
+      // 调用父组件的回调函数
       onCreate(newCharacter);
       setIsLoading(false);
       onClose();
-    }, 1000);
+    } catch (err) {
+      console.error("创建角色错误:", err);
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -99,12 +114,39 @@ const CreateCharacterDialog: FC<CreateCharacterDialogProps> = ({
                 name="description"
                 value={characterData.description}
                 onChange={handleInputChange}
-                placeholder="描述角色的性格、背景和能力"
-                rows={3}
+                placeholder="简短描述角色的特点"
+                rows={2}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
-            
+
+            {/* 头像URL */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                头像URL (可选)
+              </label>
+              <input
+                type="text"
+                name="avatar"
+                value={characterData.avatar}
+                onChange={handleInputChange}
+                placeholder="输入角色图片链接"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+              {characterData.avatar && (
+                <div className="mt-2 flex items-center">
+                  <span className="text-sm text-gray-500 mr-2">预览:</span>
+                  <img 
+                    src={characterData.avatar} 
+                    alt="头像预览" 
+                    className="w-12 h-12 rounded-full object-cover border"
+                    onError={(e) => {
+                      e.currentTarget.src = 'https://via.placeholder.com/400x260/EFEFEF/AAAAAA?text=Image+Error';
+                    }}
+                  />
+                </div>
+              )}
+            </div>
             
             {/* 标签 */}
             <div>
@@ -131,6 +173,14 @@ const CreateCharacterDialog: FC<CreateCharacterDialogProps> = ({
           </div>
           
           <div className="mt-8 flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+              disabled={isLoading}
+            >
+              取消
+            </button>
             <button
               type="submit"
               className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center"

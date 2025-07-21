@@ -77,3 +77,48 @@ export const removeFavorite = async (word: string) => {
     const res = await apiClient.post("/api/favorites/remove", { word });
     return res.data;
 };
+
+// 获取用户所有收藏单词
+export const fetchFavorites = async (userId: string): Promise<Wordcard[]> => {
+
+    // 模拟， 不与后端交互
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    return [
+        {
+            id: "word-1",
+            userId: "user-123",
+            word: "Apple",
+            pronunciation: "[æpl]",
+            pos: "noun",
+            context: "An apple is a round fruit with red or green skin and a whitish inside.",
+            conversationId: "conv-1",
+            messageId: "msg-1",
+            createdAt: "2023-10-20T08:30:00Z",
+        },
+        {
+            id: "word-2",
+            userId: "user-123",
+            word: "Banana",
+            pronunciation: "[bəˈnɑ:nə]",
+            pos: "noun",
+            context: "Bananas are long curved fruits with yellow skins.",
+            conversationId: "conv-2",
+            messageId: "msg-2",
+            createdAt: "2023-10-21T09:00:00Z",
+        },
+    ];
+
+    //api
+    const res = await apiClient.get(`/api/favorites/user/${userId}`);
+    return res.data.map((item: any) => ({
+      id: item.id,
+      userId: item.user_id,
+      word: item.word,
+      pronunciation: item.pronunciation || undefined,
+      pos: item.pos || undefined,
+      context: item.context || undefined,
+      conversationId: item.conversation_id,
+      messageId: item.message_id || undefined,
+      createdAt: item.created_at,
+    }));
+};

@@ -5,11 +5,12 @@ import { useNavigate } from "react-router-dom";
 import { X, ArrowLeft, Search, Plus } from "lucide-react";
 import type { Wordcard } from "../types";
 import { useAuth } from "../contexts/AuthContext";
+import {fetchFavorites, removeFavorite,} from "../services/wordService"; // 导入 API 函数
 
 const WordBookPage = () => {
 
     const { user: currentUser } = useAuth();
-    console.log(currentUser);
+    const navigate = useNavigate();
 
     const [wordCards, setWordCards] = useState<Wordcard[]>([]);
     const [filteredCards, setFilteredCards] = useState<Wordcard[]>([]);
@@ -17,96 +18,65 @@ const WordBookPage = () => {
     const [selectedCategory, setSelectedCategory] = useState("all");
     const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
     const [wordToDelete, setWordToDelete] = useState<string | null>(null);
-    
-    const navigate = useNavigate();
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-    // Mock Data
-    useEffect(() => {
-        const mockData: Wordcard[] = [
-            {
-                id: "word-1",
-                userId: "user-123",
-                word: "Apple",
-                pronunciation: "[æpl]",
-                pos: "noun",
-                context: "An apple is a round fruit with red or green skin and a whitish inside.",
-                conversationId: "conv-1",
-                messageId: "msg-1",
-                createdAt: "2023-10-20T08:30:00Z",
-            },
-            {
-                id: "word-2",
-                userId: "user-123",
-                word: "Banana",
-                pronunciation: "[bəˈnɑ:nə]",
-                pos: "noun",
-                context: "Bananas are long curved fruits with yellow skins.",
-                conversationId: "conv-2",
-                messageId: "msg-2",
-                createdAt: "2023-10-21T09:00:00Z",
-            },
-            {
-                id: "word-3",
-                userId: "user-123",
-                word: "Serendipity",
-                pronunciation: "[ˌser.ənˈdɪp.ə.ti]",
-                pos: "noun",
-                context: "Finding my favorite book at the flea market was pure serendipity.",
-                conversationId: "conv-3",
-                messageId: "msg-3",
-                createdAt: "2023-10-22T10:15:00Z",
-            },
-            {
-                id: "word-4",
-                userId: "user-123",
-                word: "Ubiquitous",
-                pronunciation: "[juːˈbɪk.wɪ.təs]",
-                pos: "adjective",
-                context: "Mobile phones are now ubiquitous in modern society.",
-                conversationId: "conv-4",
-                messageId: "msg-4",
-                createdAt: "2023-10-23T11:20:00Z",
-            },
-            {
-                id: "word-5",
-                userId: "user-123",
-                word: "Eloquent",
-                pronunciation: "[ˈel.ə.kwənt]",
-                pos: "adjective",
-                context: "She gave an eloquent speech that moved the entire audience.",
-                conversationId: "conv-5",
-                messageId: "msg-5",
-                createdAt: "2023-10-24T12:25:00Z",
-            },
-            {
-                id: "word-6",
-                userId: "user-123",
-                word: "Pragmatic",
-                pronunciation: "[præɡˈmæt.ɪk]",
-                pos: "adjective",
-                context: "We need a pragmatic approach to solve this problem.",
-                conversationId: "conv-6",
-                messageId: "msg-6",
-                createdAt: "2023-10-25T13:30:00Z",
-            },
-        ];
+    // 获取用户收藏单词
+    const loadFavorites = async () => {
+        if (!currentUser) return;
         
-        setWordCards(mockData);
-        setFilteredCards(mockData);
-    }, []);
+        setLoading(true);
+        setError(null);
+        
+        try {
+        const favorites = await fetchFavorites(currentUser.id);
+        setWordCards(favorites);
+        setFilteredCards(favorites);
+        } catch (err) {
+        console.error("获取收藏单词失败:", err);
+        setError("获取收藏单词失败，请稍后重试");
+        } finally {
+        setLoading(false);
+        }
+    };
+
+    // 初始化加载收藏单词
+    useEffect(() => {
+        if (currentUser) {
+        loadFavorites();
+        }
+    }, [currentUser]);
 
     // 处理单词删除
-    const handleRemoveWord = (id: string) => {
+    const handleRemoveWord = async (id: string) => {
+        const wordCard = wordCards.find(card => card.id === id);
+        if (!wordCard) return;
+
         setWordToDelete(id);
         setShowDeleteConfirmation(true);
     };
 
     // 确认删除
-    const confirmDelete = () => {
-        if (wordToDelete) {
-            setWordCards(prev => prev.filter(card => card.id !== wordToDelete));
-            setShowDeleteConfirmation(false);
-            setWordToDelete(null);
+    const confirmDelete = async () => {
+        if (!wordToDelete || !currentUser) return;
+
+        try {
+        const wordCard = wordCards.find(card => card.id === wordToDelete);
+        if (!wordCard) return;
+
+        // 调用 API 删除收藏
+        await removeFavorite(wordCard.word);
+        
+        // 本地更新状态
+        setWordCards(prev => prev.filter(card => card.id !== wordToDelete));
+        setFilteredCards(prev => prev.filter(card => card.id !== wordToDelete));
+        
+        setShowDeleteConfirmation(false);
+        setWordToDelete(null);
+        } catch (err) {
+        console.error("删除收藏失败:", err);
+        setError("删除收藏失败，请稍后重试");
+        setShowDeleteConfirmation(false);
         }
     };
 

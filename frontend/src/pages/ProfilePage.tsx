@@ -2,157 +2,65 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import type { FC } from 'react';
 import type { Character, Conversation, User } from "../types";
+import CharacterCard from "../components/CharacterCard";
+import { fetchConversationsByUser } from "../services/conversationService";
+import { fetchCustomCharacters } from "../services/characterService";
+import { useAuth } from "../contexts/AuthContext";
 
-// 角色卡片组件（已提供）
-const CharacterCard: FC<{ character: Character; onClick: () => void }> = ({ 
-  character, 
-  onClick 
-}) => (
-  <div
-    onClick={onClick}
-    className="group bg-white rounded-xl shadow-md overflow-hidden cursor-pointer transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1"
-  >
-    <img
-      className="w-full h-40 object-cover"
-      src={character.avatar || 'https://via.placeholder.com/400x260/EFEFEF/AAAAAA?text=No+Image'}
-      alt={character.name}
-    />
-    <div className="p-4 flex flex-col h-48">
-      <h3 className="font-bold text-lg text-gray-800">{character.name}</h3>
-      <p className="text-sm text-gray-500 mt-1 flex-grow">{character.description}</p>
-      {character.tags && character.tags.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-2">
-          {character.tags.map(tag => (
-            <span key={tag} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-full">
-              {tag}
-            </span>
-          ))}
-        </div>
-      )}
-    </div>
-  </div>
-);
 
 const ProfilePage = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"conversations" | "characters">("conversations");
-  const [user, setUser] = useState<User | null>(null);
+  const { user, logout } = useAuth();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [characters, setCharacters] = useState<Character[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
-  // 模拟用户数据
-  useEffect(() => {
-    setUser({
-      id: "user123",
-      username: "二次元学习者",
-    });
-  }, []);
+ // 获取用户会话历史
+  const loadConversations = async () => {
+    if (!user) return;
+    
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const data = await fetchConversationsByUser(user.id);
+      setConversations(data);
+    } catch (err) {
+      console.error("获取会话历史失败:", err);
+      setError("加载会话历史失败，请稍后重试");
+    } finally {
+      setIsLoading(false);
+    }
+  };
   
-  // 模拟获取会话历史
+  // 获取用户创建的角色
+  const loadCharacters = async () => {
+    if (!user) return;
+    
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const data = await fetchCustomCharacters(user.id);
+      setCharacters(data);
+    } catch (err) {
+      console.error("获取角色列表失败:", err);
+      setError("加载角色列表失败，请稍后重试");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 根据激活的标签加载数据
   useEffect(() => {
     if (activeTab === "conversations") {
-      // 模拟API调用
-      const mockConversations: Conversation[] = [
-        {
-          id: "conv1",
-          characterId: "char1",
-          userId: "user123",
-          title: "初次见面",
-          topic: "自我介绍",
-          summary: "学习基本问候语和自我介绍",
-          updatedAt: "2023-10-15T14:30:00Z",
-        },
-        {
-          id: "conv2",
-          characterId: "char2",
-          userId: "user123",
-          title: "动漫词汇学习",
-          topic: "常见动漫术语",
-          summary: "学习了10个常见动漫词汇及其用法",
-          updatedAt: "2023-10-12T09:15:00Z",
-        },
-        {
-          id: "conv3",
-          characterId: "char3",
-          userId: "user123",
-          title: "语法练习",
-          topic: "过去时态",
-          summary: "练习了过去时态的正确用法",
-          updatedAt: "2023-10-10T16:45:00Z",
-        },
-        {
-          id: "conv4",
-          characterId: "char4",
-          userId: "user123",
-          title: "日常对话练习",
-          topic: "餐厅点餐",
-          summary: "模拟餐厅点餐场景的对话练习",
-          updatedAt: "2023-10-05T11:20:00Z",
-        },
-      ];
-      setConversations(mockConversations);
+      loadConversations();
+    } else {
+      loadCharacters();
     }
-  }, [activeTab]);
-  
-  // 模拟获取角色列表
-  useEffect(() => {
-    if (activeTab === "characters") {
-      // 模拟API调用
-      const mockCharacters: Character[] = [
-        {
-          id: "1",
-          name: "火影老师",
-          description: "用火影忍者教英语的AI角色",
-          avatar: "https://randomuser.me/api/portraits/men/1.jpg",
-          isDefault: false,
-          createdBy: "user123",
-          tags: ["火影", "忍者", "热血"],
-        },
-        {
-          id: "2",
-          name: "海贼王导师",
-          description: "航海主题英语学习角色",
-          avatar: "https://randomuser.me/api/portraits/women/2.jpg",
-          isDefault: false,
-          createdBy: "user123",
-          tags: ["海贼王", "冒险", "航海"],
-        },
-        {
-          id: "3",
-          name: "魔法少女助教",
-          description: "魔法题材英语学习角色",
-          avatar: "https://randomuser.me/api/portraits/women/3.jpg",
-          isDefault: false,
-          createdBy: "user123",
-          tags: ["魔法", "奇幻", "少女"],
-        },
-        {
-          id: "4",
-          name: "机甲战士老师",
-          description: "机甲战斗主题英语学习角色",
-          avatar: "https://randomuser.me/api/portraits/men/4.jpg",
-          isDefault: false,
-          createdBy: "user123",
-          tags: ["机甲", "科幻", "战斗"],
-        },
-        {
-          id: "5",
-          name: "侦探推理助手",
-          description: "侦探主题英语学习角色",
-          avatar: "https://randomuser.me/api/portraits/men/5.jpg",
-          isDefault: false,
-          createdBy: "user123",
-          tags: ["推理", "侦探", "悬疑"],
-        },
-      ];
-      setCharacters(mockCharacters);
-    }
-  }, [activeTab]);
-  
-  // 处理角色点击
-  const handleCharacterClick = (characterId: string) => {
-    navigate(`/character/${characterId}`);
-  };
+  }, [activeTab, user]);
   
   // 处理会话点击
   const handleConversationClick = (conversationId: string) => {
@@ -184,8 +92,8 @@ const ProfilePage = () => {
           <div className="bg-gray-200 border-2 border-dashed rounded-xl w-24 h-24 mb-4 flex items-center justify-center text-3xl text-purple-600 font-bold">
             {user?.username?.charAt(0)}
           </div>
-          <h2 className="text-xl font-bold text-gray-800">{user?.username}</h2>
-          <div className="text-sm text-gray-500 mt-1">英语学习爱好者</div>
+          <h2 className="text-xl font-bold text-gray-800">{user?.id}</h2>
+          <div className="text-sm text-gray-500 mt-1">{user?.username}</div>
         </div>
         
         <div className="flex flex-col flex-grow px-4 py-6">
@@ -246,13 +154,7 @@ const ProfilePage = () => {
               <div className="flex flex-col items-center justify-center h-96">
                 <div className="bg-gray-200 border-2 border-dashed rounded-xl w-16 h-16 mb-4"></div>
                 <h3 className="text-xl font-medium text-gray-700 mb-2">暂无会话记录</h3>
-                <p className="text-gray-500 mb-6">开始新的对话后，历史记录会出现在这里</p>
-                <button 
-                  className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-                  onClick={() => navigate("/")}
-                >
-                  开始新对话
-                </button>
+                
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-5">
@@ -293,21 +195,15 @@ const ProfilePage = () => {
               <div className="flex flex-col items-center justify-center h-96">
                 <div className="bg-gray-200 border-2 border-dashed rounded-xl w-16 h-16 mb-4"></div>
                 <h3 className="text-xl font-medium text-gray-700 mb-2">您尚未创建任何角色</h3>
-                <p className="text-gray-500 mb-6">创建自定义角色来个性化您的学习体验</p>
-                <button 
-                  className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-                  onClick={() => navigate("/character/create")}
-                >
-                  创建角色
-                </button>
+                
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="flex flex-wrap gap-6">
                 {characters.map((char) => (
                   <CharacterCard
                     key={char.id}
                     character={char}
-                    onClick={() => handleCharacterClick(char.id)}
+                    onClick={() => void(null)}
                   />
                 ))}
               </div>
