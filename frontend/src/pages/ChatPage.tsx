@@ -447,20 +447,21 @@ export default function ChatPage() {
         <div className="h-screen w-screen bg-gray-900 font-sans text-white flex relative overflow-hidden">
             {/* 顶部标题栏 */}
             <div className="absolute top-0 left-0 right-0 z-50 bg-black bg-opacity-50 backdrop-blur-md p-4 flex items-center justify-between">
-                <div className="w-12">
+                <h1 className="text-xl font-bold text-center flex-1">
+                    {conversation.title || "对话"}
+                </h1>
+                <div className="w-12"></div> {/* 为了保持标题居中 */}
+                <div className="w-12 flex justify-end"> {/* 右侧容器 */}
                     <button
                         onClick={handleGoBack}
                         className="p-2 rounded-full hover:bg-gray-700 transition-colors"
                         title="返回首页"
                         aria-label="返回首页"
                     >
-                        <ArrowLeft size={24} />
+                        <X size={24} /> {/* 使用 X 图标更符合“关闭”当前页面的感觉 */}
                     </button>
                 </div>
-                <h1 className="text-xl font-bold text-center flex-1">
-                    {conversation.title || "对话"}
-                </h1>
-                <div className="w-12"></div> {/* 为了保持标题居中 */}
+
             </div>
 
             {/* 侧边栏 */}
