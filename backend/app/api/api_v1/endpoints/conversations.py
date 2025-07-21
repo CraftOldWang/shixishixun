@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import Any, List
 
 from app.db.session import get_db
-from app.models.models import Conversation, Message, Character
+from app.models.models import Conversation, Message, Character, User
 from app.schemas.conversation import ConversationCreate, ConversationResponse, ConversationWithMessages
 
 router = APIRouter()
@@ -121,3 +121,41 @@ def create_conversation(conversation_in: ConversationCreate, user_id: str, db: S
             },
         ],
     }
+
+@router.get("/user/{user_id}", response_model=List[dict])
+def get_user_conversations(user_id: str, db: Session = Depends(get_db)) -> Any:
+    """获取用户的所有对话"""
+    # 检查用户是否存在
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="用户不存在",
+        )
+    
+    # 获取用户的所有对话
+    conversations = db.query(Conversation).filter(
+        Conversation.user_id == user_id
+    ).order_by(Conversation.updated_at.desc()).all()
+    
+    # 构建响应
+    result = []
+    for conv in conversations:
+        # 获取角色信息
+        character = db.query(Character).filter(Character.id == conv.character_id).first()
+        
+        result.append({
+            "id": str(conv.id),
+            "title": conv.title,
+            "topic": conv.topic,
+            "summary": conv.summary,
+            "backgroundUrl": conv.background_url,
+            "updatedAt": conv.updated_at.isoformat(),
+            "character": {
+                "id": str(character.id),
+                "name": character.name,
+                "avatar": character.avatar_url,
+            } if character else None
+        })
+    
+    return result
