@@ -169,28 +169,28 @@ def create_default_characters(db: Session) -> list:
     # 默认角色数据
     default_characters = [
         {
-            "name": "全能翻译官",
-            "description": "精通多种语言，提供精准翻译。",
+            "name": "莉娜·语言学家",
+            "description": "精通多国语言的语言学专家，热爱文化交流。",
             "avatar_url": "https://bkudcgimcodwrexeqekc.supabase.co/storage/v1/object/public/media/characters/bK0mXMTrrspFRMYnE10qbheVZhODQEO4/neutral.jpg",
-            "tags": ["翻译", "学习"],
+            "tags": ["翻译", "学习", "文化"],
         },
         {
-            "name": "编程高手",
-            "description": "解决各种编程难题和代码审查。",
-            "avatar_url": "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?w=400",
-            "tags": ["编程", "技术"],
+            "name": "灵梦",
+            "description": "博丽神社的巫女，擅长退治妖怪。",
+            "avatar_url": r"https://upload.thbwiki.cc/9/93/%E5%8D%9A%E4%B8%BD%E7%81%B5%E6%A2%A6%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+            "tags": ["东方", "巫女", "退魔"],
         },
         {
-            "name": "小明",
-            "description": "热心的学习助手",
-            "avatar_url": "https://randomuser.me/api/portraits/men/1.jpg",
-            "tags": ["默认", "AI", "幽默"],
+            "name": "洛天依",
+            "description": "虚拟歌姬，拥有天籁般的歌声。",
+            "avatar_url": "https://tc.z.wiki/autoupload/f/4tNSiBEhtlRiYYEEkbejirfwAbfELPKXx4nK3--4woWyl5f0KlZfm6UsKj-HyTuv/20250721/26io/2000X2811/luotianyi.png",
+            "tags": ["歌姬", "虚拟", "音乐"],
         },
         {
-            "name": "小红",
-            "description": "善于讲故事的AI",
-            "avatar_url": "https://randomuser.me/api/portraits/women/2.jpg",
-            "tags": ["默认", "故事", "温柔"],
+            "name": "凯尔希",
+            "description": "罗德岛的医疗部门负责人，冷静而严厉。",
+            "avatar_url": "https://tc.z.wiki/autoupload/f/4tNSiBEhtlRiYYEEkbejirfwAbfELPKXx4nK3--4woWyl5f0KlZfm6UsKj-HyTuv/20250721/dWr3/1024X1024/31bc8f71f22b58a7af0da2b9ff52dde346061c643ec2f-An1mji_fw1200webp.png",
+            "tags": ["明日方舟", "医疗", "罗德岛"],
         },
     ]
     
