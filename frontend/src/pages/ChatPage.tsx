@@ -342,7 +342,8 @@ export default function ChatPage() {
         const fetchOptions = async () => {
             try {
                 const options = await fetchAiOptions(
-                    currentCharacterReply.content
+                    currentCharacterReply.content,
+                    conversationId
                 );
                 if (Array.isArray(options)) {
                     setAiOptions(options.slice(0, 3));

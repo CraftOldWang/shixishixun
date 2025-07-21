@@ -5,6 +5,7 @@ import { X } from "lucide-react";
 import type { Character, Conversation } from "../types/index";
 import { fetchConversationsByCharacter } from "../services/conversationService";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 // Define the types for the component's props
 interface HistoryDialogProps {
     character: Character;
@@ -18,6 +19,9 @@ const HistoryDialog: FC<HistoryDialogProps> = ({ character, onClose }) => {
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
+
+    const { user } = useAuth();
+    const userId = user!.id;
     useEffect(() => {
         // No need to check for character here, as the parent component ensures it exists before rendering
         const loadConversations = async () => {
@@ -25,9 +29,10 @@ const HistoryDialog: FC<HistoryDialogProps> = ({ character, onClose }) => {
             setError(null);
             try {
                 const fetchedConversations =
-                    await fetchConversationsByCharacter(character.id);
+                    await fetchConversationsByCharacter(character.id, userId);
                 setConversations(fetchedConversations);
             } catch (err) {
+                // 后端可能需要返回空列表？ 或者
                 setError("无法加载对话记录。");
                 console.error(err);
             } finally {

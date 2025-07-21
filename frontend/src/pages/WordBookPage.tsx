@@ -9,7 +9,7 @@ import {fetchFavorites, removeFavorite,} from "../services/wordService"; // å¯¼å
 
 const WordBookPage = () => {
 
-    const { user: currentUser } = useAuth();
+    const { user: currentUser, logout } = useAuth();
     const navigate = useNavigate();
 
     const [wordCards, setWordCards] = useState<Wordcard[]>([]);
@@ -87,6 +87,7 @@ const WordBookPage = () => {
     };
 
     const handleLogout = () => {
+        logout(); //
         navigate("/login");
     };
 

@@ -32,23 +32,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // --- 核心改动：组件挂载时，检查并验证存储的 Token ---
     useEffect(() => {
         const checkAuthStatus = async () => {
-            const token = localStorage.getItem("accessToken");
+            const id = localStorage.getItem("id");
+            const username = localStorage.getItem("username");
+            console.log("开始挂载")
+            console.log(id, username);
 
             // TODO测试时，无论怎样，都加载测试用户
-            setUser(await getMe())
-            if (token) {
+            // setUser(await getMe());
+            if (id && username) {
                 try {
-                    // 关键步骤：将 token 设置到 axios 的默认请求头中
-                    apiClient.defaults.headers.common[
-                        "Authorization"
-                    ] = `Bearer ${token}`;
-                    //请求头中的键值对   "Authorization": `Bearer ${token}`
-
-                    // 向后端发送请求，验证 token 的有效性，并获取用户信息
-                    setUser(await getMe());
+                    setUser({ id, username });
+                    // TODO测试用
+                    // setUser(await getMe());
                 } catch (error) {
-                    // 如果 token 无效或过期，后端会返回 401 错误
-                    // 清理无效的 token
+                    // 清理无效的 token 如果 token 无效或过期，后端会返回 401 错误
                     console.error("Token validation failed:", error);
                     logout(); // 使用 logout 函数来清理状态
                 }
@@ -61,29 +58,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }, []); // 空依赖数组确保此 effect 只在组件挂载时运行一次
 
     // --- 核心改动：实现真实的登录函数 ---
-    const login = async (username: string, password: string) => {
-        setIsLoading(true);
+    const login = async (username1: string, password: string) => {
+        // setIsLoading(true);
         try {
-            //TODO 正式API调用时需要更改
-            // // 1-2 尝试登录
-            // const { access_token } = await loginUser(username, password);
-            // // 3. 存储 token 到 localStorage
-            // localStorage.setItem("accessToken", access_token);
-            // // 4. 更新 axios 实例的默认请求头，用于后续所有请求
-            // apiClient.defaults.headers.common[
-            //     "Authorization"
-            // ] = `Bearer ${access_token}`;
+            const { id, username } = await loginUser(username1, password);
 
-            // 5. 获取并设置用户信息
-            setUser(await getMe());
+            // 存储到 localStorage
+            localStorage.setItem("id", id);
+            localStorage.setItem("username", username);
+            console.log("已经存储到localStorage")
+
+            // 设置到内存状态（用于当前页面展示）
+            setUser({ id, username });
         } catch (error) {
-            // 登录失败，确保清理任何可能残留的状态
             logout();
-            // 将错误向上抛出，以便登录页面可以捕获并显示错误信息
-            // 登录页有进行处理， 所以是ok的
+            console.log("login error")
             throw error;
-        } finally {
-            setIsLoading(false);
         }
     };
 
@@ -91,9 +81,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const logout = () => {
         setUser(null);
         // 移除 token 而不是 user 对象
-        localStorage.removeItem("accessToken");
-        // 从 axios 实例中移除 Authorization 头
-        delete apiClient.defaults.headers.common["Authorization"];
+        localStorage.removeItem("id");
+        localStorage.removeItem("username");
     };
 
     const value = {

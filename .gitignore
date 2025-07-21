@@ -19,9 +19,9 @@ env/
 ENV/
 
 # Environment variables
-*.env
-.env
-.env.*
+# *.env
+# .env
+# .env.*
 
 # Database files
 *.db
