@@ -77,7 +77,7 @@ const TopicSelectionPage = () => {
                 setCategories(topicsData);
                 setSelectedCategory(Object.keys(topicsData)[0] || "");
             } catch (error) {
-                console.error("Failed to fetch initial data:", error);
+                console.error("加载初始数据失败:", error);
                 // 这里可以添加错误提示
             } finally {
                 setIsLoading(false);
@@ -94,7 +94,7 @@ const TopicSelectionPage = () => {
             const topics = await generateTopics(prompt);
             setAiTopics(topics);
         } catch (error) {
-            console.error("Failed to generate topics:", error);
+            console.error("生成话题失败:", error);
         } finally {
             setIsGenerating(false);
         }
@@ -116,7 +116,7 @@ const TopicSelectionPage = () => {
             setIsCreatingConversation(false);
             navigate(`/chat/${convId}`);
         } catch (error) {
-            console.error("Failed to create conversation:", error);
+            console.error("创建会话失败:", error);
             setIsCreating(null);
             setIsCreatingConversation(false);
         }
@@ -125,7 +125,7 @@ const TopicSelectionPage = () => {
     if (isLoading) {
         return (
             <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900 text-white">
-                Loading...
+                加载中...
             </div>
         );
     }
@@ -147,10 +147,10 @@ const TopicSelectionPage = () => {
                     )} */}
                     <div>
                         <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
-                            Start a Conversation
+                            开始对话
                         </h1>
                         <p className="text-lg text-gray-600 dark:text-gray-400">
-                            with {character?.name}
+                            与 {character?.name} 交流
                         </p>
                     </div>
                 </div>
@@ -158,14 +158,14 @@ const TopicSelectionPage = () => {
                 {/* AI 话题生成器 */}
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8">
                     <h2 className="text-2xl font-semibold mb-4">
-                        Let AI Suggest a Topic
+                        AI 话题生成器
                     </h2>
                     <div className="flex flex-col sm:flex-row gap-4">
                         <input
                             type="text"
                             value={prompt}
                             onChange={(e) => setPrompt(e.target.value)}
-                            placeholder="Optional: type a keyword (e.g., 'technology')"
+                            placeholder="输入关键词（例如：'科技'）"
                             className="flex-grow p-3 rounded-md bg-gray-100 dark:bg-gray-700 border border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none"
                         />
                         <button
@@ -173,13 +173,13 @@ const TopicSelectionPage = () => {
                             disabled={isGenerating}
                             className="flex justify-center items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors"
                         >
-                            {isGenerating ? <Spinner /> : "Generate"}
+                            {isGenerating ? <Spinner /> : "生成话题"}
                         </button>
                     </div>
                     {aiTopics.length > 0 && (
                         <div className="mt-6">
                             <h3 className="text-xl font-semibold mb-3">
-                                AI Suggestions:
+                                AI 推荐话题:
                             </h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                 {aiTopics.map((topic) => (
@@ -198,7 +198,7 @@ const TopicSelectionPage = () => {
                 {/* 预设话题 */}
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
                     <h2 className="text-2xl font-semibold mb-4">
-                        Or, Pick a Predefined Topic
+                        或选择预设话题
                     </h2>
                     {/* 分类标签 */}
                     <div className="flex flex-wrap gap-2 mb-6 border-b border-gray-200 dark:border-gray-700 pb-4">
@@ -234,7 +234,7 @@ const TopicSelectionPage = () => {
                         <div className="bg-white dark:bg-gray-800 rounded-2xl p-12 text-center shadow-2xl w-[90%] max-w-md">
                             <Spinner2 className="w-16 h-16 text-blue-500 mx-auto mb-6" />
                             <p className="text-2xl font-bold text-gray-800 dark:text-gray-200">
-                                会话创建中...
+                                正在创建会话...
                             </p>
                         </div>
                     </div>
