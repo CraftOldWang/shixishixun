@@ -52,6 +52,7 @@ const CreateCharacterDialog: FC<CreateCharacterDialogProps> = ({
       const requestData = {
         name: characterData.name,
         description: characterData.description,
+        avatar: characterData.avatar,
         tags: characterData.tags ? 
               characterData.tags.split(',').map(tag => tag.trim()) : 
               [],
