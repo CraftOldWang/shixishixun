@@ -107,3 +107,25 @@ def generate_topics(prompt: str, num_topics: int = 5) -> List[str]:
         f"{prompt}的发展历史",
         f"{prompt}的未来趋势"
     ][:num_topics]
+
+def generate_conversation_title(messages: List[Message], character: Character, topic: str) -> str:
+    """根据对话内容生成标题"""
+    # 构建提示词
+    prompt = f"请根据以下对话内容，生成一个简短的标题（不超过15个字）：\n\n"
+    
+    # 添加对话内容
+    for msg in messages:
+        role = "用户" if msg.is_user else character.name
+        prompt += f"{role}: {msg.content}\n"
+    
+    # 添加话题信息
+    if topic:
+        prompt += f"\n话题：{topic}"
+    
+    # 调用AI生成标题
+    try:
+        response = get_dashscope_response(prompt)
+        return response.strip()
+    except Exception as e:
+        print(f"生成标题失败: {str(e)}")
+        return f"与{character.name}的对话"  # 返回默认标题

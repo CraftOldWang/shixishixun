@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from app.db.session import get_db
 from app.models.models import Message, Conversation, Character
 from app.schemas.ai import AiOptionsRequest, AiResponseRequest, AiOptionsResponse
-from app.services.ai_service import get_ai_options, get_ai_response
+from app.services.ai_service import get_ai_options, get_ai_response, generate_conversation_title
 from app.services.tts_service import tts_service
 
 router = APIRouter()
@@ -50,59 +50,82 @@ def fetch_ai_options(request: AiOptionsRequest, db: Session = Depends(get_db)) -
 @router.post("/response", response_model=Dict[str, Any])
 def fetch_ai_response(request: AiResponseRequest, db: Session = Depends(get_db)) -> Any:
     """获取AI回复"""
-    # 检查对话是否存在
-    conversation = db.query(Conversation).filter(Conversation.id == request.conversation_id).first()
-    if not conversation:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="对话不存在",
+    try:
+        # 检查对话是否存在
+        conversation = db.query(Conversation).filter(Conversation.id == request.conversation_id).first()
+        if not conversation:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"对话不存在 (ID: {request.conversation_id})",
+            )
+        
+        # 获取对话的所有消息
+        messages = db.query(Message).filter(
+            Message.conversation_id == conversation.id  # 使用数据库对象的ID
+        ).order_by(Message.timestamp).all()
+        
+        # 获取角色信息
+        character = db.query(Character).filter(Character.id == conversation.character_id).first()
+        if not character:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="角色不存在",
+            )
+        
+        # 保存用户消息
+        user_message = Message(
+            content=request.message,
+            is_user=True,
+            conversation_id=conversation.id,  # 使用数据库对象的ID
         )
-    
-    # 获取对话的所有消息
-    messages = db.query(Message).filter(Message.conversation_id == request.conversation_id).order_by(Message.timestamp).all()
-    
-    # 获取角色信息
-    character = db.query(Character).filter(Character.id == conversation.character_id).first()
-    if not character:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="角色不存在",
+        db.add(user_message)
+        db.flush()
+        db.refresh(user_message)
+        
+        # 调用AI服务获取回复
+        ai_content = get_ai_response(messages + [user_message], character, conversation.topic)
+        
+        # 保存AI回复
+        ai_message = Message(
+            content=ai_content,
+            is_user=False,
+            conversation_id=conversation.id,  # 使用数据库对象的ID
         )
-    
-    # 保存用户消息
-    user_message = Message(
-        content=request.message,
-        is_user=True,
-        conversation_id=request.conversation_id,
-    )
-    db.add(user_message)
-    db.flush()
-    
-    # 调用AI服务获取回复
-    ai_content = get_ai_response(messages + [user_message], character, conversation.topic)
-    
-    # 保存AI回复
-    ai_message = Message(
-        content=ai_content,
-        is_user=False,
-        conversation_id=request.conversation_id,
-    )
-    db.add(ai_message)
-    db.commit()  # 先提交，确保ai_message.timestamp有值
-    db.refresh(ai_message)
-
-    # 更新对话的更新时间
-    conversation.updated_at = ai_message.timestamp or datetime.utcnow()
-    db.commit()
-    db.refresh(ai_message)
-    db.refresh(conversation)
-    
-    return {
-        "id": ai_message.id,
-        "content": ai_message.content,
-        "isUser": ai_message.is_user,
-        "timestamp": ai_message.timestamp.isoformat(),
-    }
+        db.add(ai_message)
+        db.flush()
+        db.refresh(ai_message)
+        
+        # 更新对话标题（每3条消息更新一次）
+        all_messages = messages + [user_message, ai_message]
+        if len(all_messages) % 3 == 0:
+            new_title = generate_conversation_title(all_messages, character, conversation.topic)
+            conversation.title = new_title
+        
+        # 更新对话的更新时间
+        conversation.updated_at = ai_message.timestamp or datetime.utcnow()
+        db.commit()
+        
+        # 确保获取最新状态
+        db.refresh(conversation)
+        db.refresh(ai_message)
+        
+        return {
+            "id": str(ai_message.id),
+            "content": ai_message.content,
+            "isUser": ai_message.is_user,
+            "timestamp": ai_message.timestamp.isoformat() if ai_message.timestamp else None,
+            "conversationTitle": conversation.title
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error in fetch_ai_response: {str(e)}")  # 添加日志
+        db.rollback()  # 发生错误时回滚
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="处理请求时发生错误"
+        )
 
 @router.post("/tts", response_class=FileResponse)
 def text_to_speech(request: TTSRequest) -> Any:
