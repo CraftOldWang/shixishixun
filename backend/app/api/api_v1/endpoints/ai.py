@@ -88,11 +88,14 @@ def fetch_ai_response(request: AiResponseRequest, db: Session = Depends(get_db))
         conversation_id=request.conversation_id,
     )
     db.add(ai_message)
-    
+    db.commit()  # 先提交，确保ai_message.timestamp有值
+    db.refresh(ai_message)
+
     # 更新对话的更新时间
-    conversation.updated_at = ai_message.timestamp
+    conversation.updated_at = ai_message.timestamp or datetime.utcnow()
     db.commit()
     db.refresh(ai_message)
+    db.refresh(conversation)
     
     return {
         "id": ai_message.id,

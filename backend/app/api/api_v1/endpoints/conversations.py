@@ -5,6 +5,7 @@ from typing import Any, List
 from app.db.session import get_db
 from app.models.models import Conversation, Message, Character, User
 from app.schemas.conversation import ConversationCreate, ConversationResponse, ConversationWithMessages
+from app.services.ai_service import get_ai_response
 
 router = APIRouter()
 
@@ -53,7 +54,7 @@ def get_conversation_messages(conversation_id: str, db: Session = Depends(get_db
     
     return result
 
-@router.post("/", response_model=ConversationWithMessages)
+@router.post("/", response_model=ConversationResponse)
 def create_conversation(conversation_in: ConversationCreate, user_id: str, db: Session = Depends(get_db)) -> Any:
     """创建新对话并返回AI的第一条回复"""
     # 检查角色是否存在
@@ -66,7 +67,7 @@ def create_conversation(conversation_in: ConversationCreate, user_id: str, db: S
     
     # 创建对话
     conversation = Conversation(
-        title=conversation_in.title or f"与{character.name}的对话",
+        title=f"与{character.name}的对话",
         topic=conversation_in.topic,
         user_id=user_id,
         character_id=conversation_in.character_id,
@@ -74,18 +75,13 @@ def create_conversation(conversation_in: ConversationCreate, user_id: str, db: S
     db.add(conversation)
     db.flush()  # 获取ID
     
-    # 创建用户的第一条消息
-    user_message = Message(
-        content=conversation_in.first_message,
-        is_user=True,
-        conversation_id=conversation.id,
-    )
-    db.add(user_message)
+    # 调用AI服务获取第一条回复
+    # 注意：这里我们传入一个空的消息列表，让AI生成开场白
+    ai_content = get_ai_response([], character, conversation.topic)
     
     # 创建AI的回复消息
-    # 这里应该调用AI服务获取回复，暂时使用模拟数据
     ai_message = Message(
-        content=f"你好！我是{character.name}。{character.description}",
+        content=ai_content,
         is_user=False,
         conversation_id=conversation.id,
     )
@@ -94,33 +90,8 @@ def create_conversation(conversation_in: ConversationCreate, user_id: str, db: S
     db.commit()
     db.refresh(conversation)
     
-    # 构建响应
-    return {
-        "id": str(conversation.id),
-        "title": conversation.title,
-        "topic": conversation.topic,
-        "summary": conversation.summary,
-        "backgroundUrl": conversation.background_url,
-        "user_id": conversation.user_id,
-        "character_id": conversation.character_id,
-        "updated_at": conversation.updated_at.isoformat(),
-        "messages": [
-            {
-                "id": str(user_message.id),
-                "conversationId": str(conversation.id),
-                "content": user_message.content,
-                "isUser": user_message.is_user,
-                "timestamp": user_message.timestamp.isoformat(),
-            },
-            {
-                "id": str(ai_message.id),
-                "conversationId": str(conversation.id),
-                "content": ai_message.content,
-                "isUser": ai_message.is_user,
-                "timestamp": ai_message.timestamp.isoformat(),
-            },
-        ],
-    }
+    # 直接返回数据库对象，FastAPI会自动根据response_model进行序列化
+    return conversation
 
 @router.get("/user/{user_id}", response_model=List[dict])
 def get_user_conversations(user_id: str, db: Session = Depends(get_db)) -> Any:
