@@ -136,8 +136,8 @@ def get_character_sessions(character_id: str, user_id: str, db: Session = Depend
         )
     
     # 获取该角色与用户的所有对话
-    conversations = db.query(Character.conversations).filter(
-        Character.id == character_id,
+    conversations = db.query(Conversation).filter(
+        Conversation.character_id == character_id,
         Conversation.user_id == user_id,
     ).all()
     
@@ -149,7 +149,7 @@ def get_character_sessions(character_id: str, user_id: str, db: Session = Depend
             "title": conv.title,
             "scene": conv.topic,  # 前端期望scene字段
             "summary": conv.summary,
-            "timestamp": conv.updated_at.isoformat(),  # 前端期望timestamp字段
+            "timestamp": conv.created_at.isoformat(),  # 前端期望timestamp字段
         })
     
     return result
