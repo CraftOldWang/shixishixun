@@ -513,7 +513,7 @@ export default function ChatPage() {
                     {" "}
                     {/* 同样添加 pt-16 */}
                     <img
-                        src={conversation.backgroundUrl}
+                        src={"https://t.alcy.cc/fj"}
                         alt={conversation.topic}
                         className="w-full h-full object-cover"
                     />
