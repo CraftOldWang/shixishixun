@@ -3,7 +3,10 @@ import type { Message } from "../types";
 import apiClient from "./api";
 import { useAuth } from "../contexts/AuthContext";
 
-export const fetchAiOptions = async (replyText: string, conversationId: string): Promise<string[]> => {
+export const fetchAiOptions = async (
+    replyText: string,
+    conversationId: string
+): Promise<string[]> => {
     // 为了模拟网络延迟，你可以添加一个 setTimeout
     // const mockAiOptions: string[] = [
     //     "关于它的位置有什么理论？",
@@ -16,7 +19,7 @@ export const fetchAiOptions = async (replyText: string, conversationId: string):
     try {
         const res = await apiClient.post("/api/ai/options", {
             reply: replyText,
-            conversationId
+            conversationId,
         });
         // 期待后端返回
         // {
@@ -70,13 +73,12 @@ export async function getAiResponse(
     //     timestamp: new Date().toISOString(),
     // };
 
-    const { user} = useAuth();
+    const { user } = useAuth();
     const userId = user!.id;
 
     const res = await apiClient.post<Message>("/api/ai/response", {
-        userInput,
-        conversationId,
-        userId
+        conversation_id:conversationId,
+        message: userInput,
     });
 
     return res.data;

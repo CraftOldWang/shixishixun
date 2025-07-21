@@ -23,7 +23,7 @@ def get_conversation(conversation_id: str, db: Session = Depends(get_db)) -> Any
         "title": conversation.title,
         "topic": conversation.topic,
         "summary": conversation.summary,
-        "backgroundUrl": conversation.background_url,
+        "background_url": conversation.background_url,
         "user_id": conversation.user_id,
         "character_id": conversation.character_id,
         "updated_at": conversation.updated_at.isoformat()

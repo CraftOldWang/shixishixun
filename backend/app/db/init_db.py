@@ -55,7 +55,8 @@ def create_sample_conversations(db: Session, user_id: str, characters: list) -> 
         topic="科学",
         summary="关于大爆炸理论的一些初步讨论...",
         created_at=datetime.now() - timedelta(days=3),
-        updated_at=datetime.now() - timedelta(days=3)
+        updated_at=datetime.now() - timedelta(days=3),
+        background_url="https://w.wallhaven.cc/full/po/wallhaven-po2vg3.jpg"
     )
     db.add(conv1)
     db.flush()
@@ -170,7 +171,7 @@ def create_default_characters(db: Session) -> list:
         {
             "name": "全能翻译官",
             "description": "精通多种语言，提供精准翻译。",
-            "avatar_url": "https://images.unsplash.com/photo-1543465077-5338d8232588?w=400",
+            "avatar_url": "https://bkudcgimcodwrexeqekc.supabase.co/storage/v1/object/public/media/characters/bK0mXMTrrspFRMYnE10qbheVZhODQEO4/neutral.jpg",
             "tags": ["翻译", "学习"],
         },
         {
