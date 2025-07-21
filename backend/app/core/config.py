@@ -22,6 +22,10 @@ class Settings(BaseSettings):
     # 安全配置
     SECRET_KEY: str = os.getenv("SECRET_KEY", "your-secret-key-for-development-only")
     
+    # 音频文件配置
+    AUDIO_FILES_DIR: str = "static/audio_files"  # 相对于项目根目录
+    AUDIO_FILES_MAX_AGE: int = 24  # 音频文件保存时间（小时）
+    
     class Config:
         case_sensitive = True
 

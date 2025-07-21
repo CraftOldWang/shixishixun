@@ -1,13 +1,24 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Form
 from sqlalchemy.orm import Session
 from typing import Any, List, Dict
+import os
+from fastapi.responses import FileResponse
+from datetime import datetime
+from pydantic import BaseModel
 
 from app.db.session import get_db
 from app.models.models import Message, Conversation, Character
 from app.schemas.ai import AiOptionsRequest, AiResponseRequest, AiOptionsResponse
 from app.services.ai_service import get_ai_options, get_ai_response
+from app.services.tts_service import tts_service
 
 router = APIRouter()
+
+class TTSRequest(BaseModel):
+    text: str
+    voice: str = "zh-CN-XiaoxiaoNeural"  # 默认中文女声
+    rate: str = "+0%"  # 默认语速
+    volume: str = "+0%"  # 默认音量
 
 @router.post("/get-ai-options", response_model=AiOptionsResponse)
 def fetch_ai_options(request: AiOptionsRequest, db: Session = Depends(get_db)) -> Any:
@@ -77,11 +88,14 @@ def fetch_ai_response(request: AiResponseRequest, db: Session = Depends(get_db))
         conversation_id=request.conversation_id,
     )
     db.add(ai_message)
-    
+    db.commit()  # 先提交，确保ai_message.timestamp有值
+    db.refresh(ai_message)
+
     # 更新对话的更新时间
-    conversation.updated_at = ai_message.timestamp
+    conversation.updated_at = ai_message.timestamp or datetime.utcnow()
     db.commit()
     db.refresh(ai_message)
+    db.refresh(conversation)
     
     return {
         "id": ai_message.id,
@@ -89,3 +103,52 @@ def fetch_ai_response(request: AiResponseRequest, db: Session = Depends(get_db))
         "isUser": ai_message.is_user,
         "timestamp": ai_message.timestamp.isoformat(),
     }
+
+@router.post("/tts", response_class=FileResponse)
+def text_to_speech(request: TTSRequest) -> Any:
+    """将文本转换为语音"""
+    try:
+        # 创建音频文件目录
+        audio_dir = os.path.join(os.getcwd(), "audio_files")
+        os.makedirs(audio_dir, exist_ok=True)
+        
+        # 生成唯一的文件名
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        output_file = os.path.join(audio_dir, f"tts_{timestamp}.wav")
+        
+        # 设置TTS参数
+        tts_service.set_voice(request.voice)
+        tts_service.set_rate(request.rate)
+        tts_service.set_volume(request.volume)
+        
+        # 转换文本为语音
+        audio_file = tts_service.text_to_speech(request.text, output_file)
+        if not audio_file:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="语音生成失败",
+            )
+        
+        # 返回音频文件
+        return FileResponse(
+            audio_file,
+            media_type="audio/wav",
+            filename=os.path.basename(audio_file)
+        )
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"语音生成失败: {str(e)}",
+        )
+
+@router.get("/voices")
+def get_available_voices() -> List[dict]:
+    """获取可用的语音列表"""
+    return [
+        {"id": "zh-CN-XiaoxiaoNeural", "name": "晓晓（女声，中文）"},
+        {"id": "zh-CN-YunxiNeural", "name": "云希（男声，中文）"},
+        {"id": "zh-CN-YunyangNeural", "name": "云扬（男声，中文）"},
+        {"id": "en-US-JennyNeural", "name": "Jenny（女声，英文）"},
+        {"id": "en-US-GuyNeural", "name": "Guy（男声，英文）"},
+    ]

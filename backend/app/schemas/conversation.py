@@ -4,10 +4,9 @@ from datetime import datetime
 
 # 对话创建模型
 class ConversationCreate(BaseModel):
-    title: Optional[str] = None
     topic: Optional[str] = None
     character_id: str
-    first_message: str
+    
 
 # 对话响应模型
 class ConversationResponse(BaseModel):
