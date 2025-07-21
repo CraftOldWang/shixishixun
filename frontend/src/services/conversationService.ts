@@ -120,7 +120,7 @@ export async function fetchConversationsByCharacter(
     // );
 
     //2. 调用api
-    const response = await apiClient.get(`/api/users/${userId}/characters/${characterId}/conversations`);
+    const response = await apiClient.get(`/api/characters/sessions/${characterId}?user_id=${userId}`);
     return response.data
         .map(
             (item: any): Conversation => ({
