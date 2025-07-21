@@ -24,9 +24,9 @@ def get_conversation(conversation_id: str, db: Session = Depends(get_db)) -> Any
         "topic": conversation.topic,
         "summary": conversation.summary,
         "backgroundUrl": conversation.background_url,
-        "userId": conversation.user_id,
-        "characterId": conversation.character_id,
-        "updatedAt": conversation.updated_at.isoformat(),
+        "user_id": conversation.user_id,
+        "character_id": conversation.character_id,
+        "updated_at": conversation.updated_at.isoformat()
     }
 
 @router.get("/{conversation_id}/messages", response_model=List[dict])
@@ -101,9 +101,9 @@ def create_conversation(conversation_in: ConversationCreate, user_id: str, db: S
         "topic": conversation.topic,
         "summary": conversation.summary,
         "backgroundUrl": conversation.background_url,
-        "userId": conversation.user_id,
-        "characterId": conversation.character_id,
-        "updatedAt": conversation.updated_at.isoformat(),
+        "user_id": conversation.user_id,
+        "character_id": conversation.character_id,
+        "updated_at": conversation.updated_at.isoformat(),
         "messages": [
             {
                 "id": str(user_message.id),
