@@ -58,7 +58,7 @@ const CreateCharacterDialog: FC<CreateCharacterDialogProps> = ({
       };
       
       // 调用API创建角色
-      const newCharacter = await createCharacter(currentUser?.id,requestData);
+      const newCharacter = await createCharacter(currentUser!.id,requestData);
       
       // 调用父组件的回调函数
       onCreate(newCharacter);

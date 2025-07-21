@@ -30,7 +30,7 @@ def get_default_characters(db: Session = Depends(get_db)) -> Any:
     
     return result
 
-@router.get("/characters/users/{user_id}", response_model=List[CharacterWithTags])
+@router.get("/users/{user_id}", response_model=List[CharacterWithTags])
 def get_user_characters(user_id: str, db: Session = Depends(get_db)) -> Any:
     """获取指定用户创建的角色列表
     

@@ -58,7 +58,9 @@ export async function fetchDefaultCharacters(): Promise<Character[]> {
 }
 
 // 获取当前用户创建的角色
-export async function fetchCustomCharacters(userId: string): Promise<Character[]> {
+export async function fetchCustomCharacters(
+    userId: string
+): Promise<Character[]> {
     // 为了模拟网络延迟，你可以添加一个 setTimeout
     // await new Promise((resolve) => setTimeout(resolve, 100)); // 延迟500毫秒
 
@@ -74,7 +76,7 @@ export async function fetchCustomCharacters(userId: string): Promise<Character[]
     //     },
     // ];
 
-    const response = await apiClient.get(`/api/characters/user/${userId}`);
+    const response = await apiClient.get(`/api/characters/users/${userId}`);
     console.log("获取自定义角色");
     console.log(response.data);
 
@@ -121,33 +123,35 @@ export async function fetchSingleCharacterById(
     };
 }
 
-
 // 创建新角色
 export const createCharacter = async (
     userId: string,
     characterData: any
 ): Promise<Character> => {
-  try {
-    
-    const response = await apiClient.post("/api/characters/");
-    
-    if (response.status !== 200) {
-      const errorData = response.data;
-      throw new Error(errorData.detail || "创建角色失败");
+    try {
+        console.log(characterData);
+        const response = await apiClient.post(
+            `/api/characters/create?user_id=${userId}`,
+            characterData
+        );
+
+        if (response.status !== 200) {
+            const errorData = response.data;
+            throw new Error(errorData.detail || "创建角色失败");
+        }
+
+        // 映射后端字段到前端类型
+        return {
+            id: response.data.id,
+            name: response.data.name,
+            description: response.data.description,
+            avatar: response.data.avatar,
+            isDefault: response.data.isDefault,
+            createdBy: userId,
+            tags: response.data.tags || [],
+        };
+    } catch (error) {
+        console.error("创建角色错误:", error);
+        throw error;
     }
-    
-    // 映射后端字段到前端类型
-    return {
-      id: response.data.id,
-      name: response.data.name,
-      description: response.data.description,
-      avatar: response.data.avatar,
-      isDefault: response.data.isDefault,
-      createdBy: userId,
-      tags: response.data.tags || []
-    };
-  } catch (error) {
-    console.error("创建角色错误:", error);
-    throw error;
-  }
 };
