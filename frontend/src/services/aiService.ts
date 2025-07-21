@@ -4,7 +4,6 @@ import apiClient from "./api";
 import { useAuth } from "../contexts/AuthContext";
 
 export const fetchAiOptions = async (
-    replyText: string,
     conversationId: string
 ): Promise<string[]> => {
     // 为了模拟网络延迟，你可以添加一个 setTimeout
@@ -17,9 +16,8 @@ export const fetchAiOptions = async (
     // return mockAiOptions;
 
     try {
-        const res = await apiClient.post("/api/ai/options", {
-            reply: replyText,
-            conversationId,
+        const res = await apiClient.post("/api/ai/get-ai-options", {
+            conversation_id:conversationId,
         });
         // 期待后端返回
         // {
@@ -49,10 +47,9 @@ export async function saveUserMessage(
     //     timestamp: new Date().toISOString(),
     // };
 
-    const res = await apiClient.post<Message>("/api/messages", {
+    const res = await apiClient.post<Message>("/api/messages/save", {
         content,
-        conversationId,
-        isUser: true,
+        conversation_id:conversationId,
     });
     return res.data;
 }
@@ -75,9 +72,9 @@ export async function getAiResponse(
 
     const { user } = useAuth();
     const userId = user!.id;
-
+    console.log({conversationId, userInput})
     const res = await apiClient.post<Message>("/api/ai/response", {
-        conversation_id:conversationId,
+        conversation_id: conversationId,
         message: userInput,
     });
 
@@ -96,9 +93,9 @@ export const createConversation = async (
     console.log(
         `Creating conversation for character ${characterId} with topic: "${topic}"`
     );
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    // await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    return `conv_${Date.now()}`;
+    // return `conv_${Date.now()}`;
 
     const res = await apiClient.post<CreateConversationResponse>(
         "/api/conversation/create",
