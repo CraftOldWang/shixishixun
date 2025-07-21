@@ -183,7 +183,7 @@ export async function fetchConversationsByUser(
     await new Promise((resolve) => setTimeout(resolve, 500)); // 延迟500毫秒
     */
     //2. 调用api
-    const response = await apiClient.get(`/api/conversation/user/${userId}`);
+    const response = await apiClient.get(`/api/conversations/user/${userId}`);
     return response.data
         .map(
             (item: any): Conversation => ({

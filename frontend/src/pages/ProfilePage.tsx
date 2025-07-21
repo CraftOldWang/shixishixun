@@ -7,7 +7,6 @@ import { fetchConversationsByUser } from "../services/conversationService";
 import { fetchCustomCharacters } from "../services/characterService";
 import { useAuth } from "../contexts/AuthContext";
 
-
 const ProfilePage = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"conversations" | "characters">("conversations");
@@ -17,7 +16,7 @@ const ProfilePage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
- // 获取用户会话历史
+  // 获取用户会话历史
   const loadConversations = async () => {
     if (!user) return;
     
@@ -92,8 +91,8 @@ const ProfilePage = () => {
           <div className="bg-gray-200 border-2 border-dashed rounded-xl w-24 h-24 mb-4 flex items-center justify-center text-3xl text-purple-600 font-bold">
             {user?.username?.charAt(0)}
           </div>
-          <h2 className="text-xl font-bold text-gray-800">{user?.id}</h2>
-          <div className="text-sm text-gray-500 mt-1">{user?.username}</div>
+          {/* 修改后的用户名显示部分 */}
+          <div className="text-lg font-bold text-gray-800 mt-1">{user?.username}</div>
         </div>
         
         <div className="flex flex-col flex-grow px-4 py-6">
@@ -154,7 +153,6 @@ const ProfilePage = () => {
               <div className="flex flex-col items-center justify-center h-96">
                 <div className="bg-gray-200 border-2 border-dashed rounded-xl w-16 h-16 mb-4"></div>
                 <h3 className="text-xl font-medium text-gray-700 mb-2">暂无会话记录</h3>
-                
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-5">
@@ -188,14 +186,12 @@ const ProfilePage = () => {
           <div>
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-2xl font-bold text-gray-800">已创建角色</h1>
-              
             </div>
             
             {characters.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-96">
                 <div className="bg-gray-200 border-2 border-dashed rounded-xl w-16 h-16 mb-4"></div>
                 <h3 className="text-xl font-medium text-gray-700 mb-2">您尚未创建任何角色</h3>
-                
               </div>
             ) : (
               <div className="flex flex-wrap gap-6">
