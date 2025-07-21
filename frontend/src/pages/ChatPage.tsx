@@ -26,6 +26,7 @@ import {
     getAiResponse,
     saveUserMessage,
 } from "../services/aiService";
+import { useAuth } from "../contexts/AuthContext";
 // --- 模拟数据 (为单个对话场景调整) ---
 
 // --- React 组件 ---
@@ -39,7 +40,7 @@ const WordDefinitionPopup: React.FC<{
     const [data, setData] = useState<Partial<Wordcard> | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isFavorited, setIsFavorited] = useState(false); // 收藏状态
-
+    const {user} = useAuth();
     useEffect(() => {
         setIsLoading(true);
         setData(null);
@@ -48,7 +49,7 @@ const WordDefinitionPopup: React.FC<{
         // 同时请求词义 和 收藏状态
         Promise.all([
             fetchWordDefinition(word),
-            checkIfFavorited(word), // 👈 加这个
+            checkIfFavorited(word,user!.id), // 👈 加这个
         ]).then(([def, favorited]) => {
             setData(def);
             setIsFavorited(favorited);

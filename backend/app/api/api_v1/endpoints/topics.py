@@ -22,7 +22,7 @@ def get_predefined_topics(db: Session = Depends(get_db)) -> Any:
         for topic in topics:
             topic_list.append(TopicResponse(
                 id=topic.id,
-                title=topic.title,
+                title=topic.content,
             ))
         
         result.append(TopicCategoryResponse(
