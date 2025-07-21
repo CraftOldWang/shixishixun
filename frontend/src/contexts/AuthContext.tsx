@@ -57,7 +57,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     // --- 核心改动：实现真实的登录函数 ---
     const login = async (username1: string, password: string) => {
-        setIsLoading(true);
+        // setIsLoading(true);
         try {
             const { id, username } = await loginUser(username1, password);
 
@@ -69,9 +69,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
             setUser({ id, username });
         } catch (error) {
             logout();
+            console.log("login error")
             throw error;
-        } finally {
-            setIsLoading(false);
         }
     };
 

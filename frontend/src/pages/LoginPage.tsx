@@ -6,10 +6,12 @@ const LoginPage = () => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
-    const { login, isLoading } = useAuth();
+    const { login } = useAuth();
+    const [ isLoading, setIsLoading ] = useState<boolean>(false);
     const navigate = useNavigate();
 
     const handleLogin = async (e: React.FormEvent) => {
+        setIsLoading(true);
         e.preventDefault();
         setError(""); // 重置错误信息
 
@@ -18,6 +20,8 @@ const LoginPage = () => {
             navigate("/");
         } catch (err) {
             setError("登录失败，请检查用户名和密码，或注册账号。");
+        } finally {
+            setIsLoading(false);
         }
     };
 
