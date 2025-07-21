@@ -87,11 +87,24 @@ def create_conversation(conversation_in: ConversationCreate, user_id: str, db: S
     )
     db.add(ai_message)
     
+    # 确保所有更改都被提交
     db.commit()
-    db.refresh(conversation)
     
-    # 直接返回数据库对象，FastAPI会自动根据response_model进行序列化
-    return conversation
+    # 刷新所有对象以获取最新状态
+    db.refresh(conversation)
+    db.refresh(ai_message)
+    
+    # 返回对话信息
+    return {
+        "id": str(conversation.id),
+        "title": conversation.title,
+        "topic": conversation.topic,
+        "summary": conversation.summary,
+        "backgroundUrl": conversation.background_url,
+        "userId": conversation.user_id,
+        "characterId": conversation.character_id,
+        "updatedAt": conversation.updated_at.isoformat() if conversation.updated_at else None
+    }
 
 @router.get("/user/{user_id}", response_model=List[dict])
 def get_user_conversations(user_id: str, db: Session = Depends(get_db)) -> Any:
