@@ -32,7 +32,7 @@ const HomePage = () => {
 
     useEffect(() => {
         // 加载自定义角色
-        fetchCustomCharacters().then(setCustomCharacters);
+        fetchCustomCharacters(currentUser!.id).then(setCustomCharacters);
     }, []);
 
     // --- Event Handlers ---

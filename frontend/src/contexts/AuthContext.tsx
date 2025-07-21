@@ -34,6 +34,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const checkAuthStatus = async () => {
             const id = localStorage.getItem("id");
             const username = localStorage.getItem("username");
+            console.log("开始挂载")
+            console.log(id, username);
 
             // TODO测试时，无论怎样，都加载测试用户
             // setUser(await getMe());
@@ -64,6 +66,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             // 存储到 localStorage
             localStorage.setItem("id", id);
             localStorage.setItem("username", username);
+            console.log("已经存储到localStorage")
 
             // 设置到内存状态（用于当前页面展示）
             setUser({ id, username });

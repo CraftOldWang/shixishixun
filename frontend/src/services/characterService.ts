@@ -43,6 +43,8 @@ export async function fetchDefaultCharacters(): Promise<Character[]> {
     // ];
 
     const response = await apiClient.get("/api/characters/default");
+    console.log("使用api得到默认角色");
+    console.log(response.data);
 
     // 映射后端字段到前端类型（avatarUrl -> avatar）
     return response.data.map((item: any) => ({
@@ -56,7 +58,7 @@ export async function fetchDefaultCharacters(): Promise<Character[]> {
 }
 
 // 获取当前用户创建的角色
-export async function fetchCustomCharacters(): Promise<Character[]> {
+export async function fetchCustomCharacters(userId: string): Promise<Character[]> {
     // 为了模拟网络延迟，你可以添加一个 setTimeout
     // await new Promise((resolve) => setTimeout(resolve, 100)); // 延迟500毫秒
 
@@ -71,10 +73,10 @@ export async function fetchCustomCharacters(): Promise<Character[]> {
     //         tags: ["健康", "运动"],
     //     },
     // ];
-    const{ user }= useAuth();
-    const userid = user!.id; // 到这里的话必然存在(除非是测试)
 
-    const response = await apiClient.get(`/api/characters/user/${userid}`);
+    const response = await apiClient.get(`/api/characters/user/${userId}`);
+    console.log("获取自定义角色");
+    console.log(response.data);
 
     return response.data.map((item: any) => ({
         id: item.id,
@@ -119,8 +121,4 @@ export async function fetchSingleCharacterById(
     };
 }
 
-
-
-
 //TODO 前端创建角色的API 。
-

@@ -83,9 +83,10 @@ export const getMessagesByConversationId = async (
 
 
 // 获取某角色的所有历史会话 , 按时间降序排序(新的在数组的前面)。
-// 由于有JWT token， 所以后端应该能知道用户id
+// 同样不带messages
 export async function fetchConversationsByCharacter(
-    characterId: string
+    characterId: string,
+    userId:string
 ): Promise<Conversation[]> {
     // 1. 假数据， 调api时记得注释掉。
     // console.log(`Fetching history for character ${characterId}...`);
@@ -119,8 +120,6 @@ export async function fetchConversationsByCharacter(
     // );
 
     //2. 调用api
-    const {user} = useAuth();
-    const userId = user!.id;  //断言一定有user
     const response = await apiClient.get(`/api/users/${userId}/characters/${characterId}/conversations`);
     return response.data
         .map(
