@@ -31,23 +31,23 @@ def call_qwen_model(prompt: str) -> str:
             return response.output.choices[0].message.content
         else:
             logger.error(f"调用通义千问模型失败: {response.code}, {response.message}")
-            return "抱歉，我现在无法回答这个问题。"
+            return "Sorry, I'm unable to answer that right now."
     except Exception as e:
         logger.error(f"调用通义千问模型异常: {str(e)}")
-        return "抱歉，我现在遇到了一些技术问题。"
+        return "Sorry, I'm experiencing some technical difficulties."
 
 def format_messages_for_prompt(messages: List[Message], character: Character, topic: str = None) -> str:
     """将消息格式化为提示"""
-    prompt = f"你是{character.name}，{character.description}\n"
+    prompt = f"You are {character.name}, {character.description}. Always respond in English.\n"
     
     if topic:
-        prompt += f"当前对话的主题是：{topic}\n"
+        prompt += f"Current conversation topic: {topic}\n"
     
-    prompt += "以下是对话历史：\n"
+    prompt += "Conversation history:\n"
     
     for msg in messages:
         if msg.is_user:
-            prompt += f"用户: {msg.content}\n"
+            prompt += f"User: {msg.content}\n"
         else:
             prompt += f"{character.name}: {msg.content}\n"
     
@@ -56,7 +56,7 @@ def format_messages_for_prompt(messages: List[Message], character: Character, to
 def get_ai_options(messages: List[Message], character: Character, topic: str = None) -> List[str]:
     """获取AI推荐问题"""
     prompt = format_messages_for_prompt(messages, character, topic)
-    prompt += "\n根据以上对话历史，请生成3个用户可能想问的问题，直接以JSON数组格式返回，不要有其他内容。格式为: [\"问题1\", \"问题2\", \"问题3\"]"
+    prompt += "\nBased on the conversation history, generate 3 possible follow-up questions the user might ask. Return ONLY a JSON array format with English questions. Format: [\"question1\", \"question2\", \"question3\"]"
     
     response = call_qwen_model(prompt)
     
@@ -70,24 +70,24 @@ def get_ai_options(messages: List[Message], character: Character, topic: str = N
     
     # 如果解析失败，返回默认选项
     return [
-        "你能告诉我更多关于这个话题的信息吗？",
-        "你对这个问题有什么看法？",
-        "我们可以换个话题吗？"
+        "Can you tell me more about this topic?",
+        "What are your thoughts on this matter?",
+        "Could we discuss something else?"
     ]
 
 def get_ai_response(messages: List[Message], character: Character, topic: str = None) -> str:
     """获取AI回复"""
     prompt = format_messages_for_prompt(messages, character, topic)
-    prompt += f"\n请以{character.name}的身份回复用户的最后一条消息，保持角色特点，不要说你是AI或模型。"
+    prompt += f"\nRespond as {character.name} to the user's last message. Maintain character traits, speak naturally in English, and never mention being an AI or model."
     
     response = call_qwen_model(prompt)
     return response
 
 def generate_topics(prompt: str, num_topics: int = 5) -> List[str]:
     """根据提示生成话题"""
-    system_prompt = f"根据用户的提示，生成{num_topics}个相关的对话话题，直接以JSON数组格式返回，不要有其他内容。格式为: [\"话题1\", \"话题2\", ...]"
+    system_prompt = f"Generate {num_topics} relevant conversation topics in English based on the user's prompt. Return ONLY a JSON array format. Format: [\"topic1\", \"topic2\", ...]"
     
-    full_prompt = f"{system_prompt}\n\n用户提示: {prompt}"
+    full_prompt = f"{system_prompt}\n\nUser prompt: {prompt}"
     
     response = call_qwen_model(full_prompt)
     
@@ -101,31 +101,31 @@ def generate_topics(prompt: str, num_topics: int = 5) -> List[str]:
     
     # 如果解析失败，返回默认话题
     return [
-        f"{prompt}的基础知识",
-        f"关于{prompt}的常见问题",
-        f"{prompt}的应用场景",
-        f"{prompt}的发展历史",
-        f"{prompt}的未来趋势"
+        f"Fundamentals of {prompt}",
+        f"Common questions about {prompt}",
+        f"Practical applications of {prompt}",
+        f"Historical development of {prompt}",
+        f"Future trends in {prompt}"
     ][:num_topics]
 
 def generate_conversation_title(messages: List[Message], character: Character, topic: str) -> str:
     """根据对话内容生成标题"""
     # 构建提示词
-    prompt = f"请根据以下对话内容，生成一个简短的标题（不超过15个字）：\n\n"
+    prompt = f"Generate a concise English title (max 15 words) for this conversation:\n\n"
     
     # 添加对话内容
     for msg in messages:
-        role = "用户" if msg.is_user else character.name
+        role = "User" if msg.is_user else character.name
         prompt += f"{role}: {msg.content}\n"
     
     # 添加话题信息
     if topic:
-        prompt += f"\n话题：{topic}"
+        prompt += f"\nTopic: {topic}"
     
     # 调用AI生成标题
     try:
-        response = get_dashscope_response(prompt)
+        response = call_qwen_model(prompt)
         return response.strip()
     except Exception as e:
         print(f"生成标题失败: {str(e)}")
-        return f"与{character.name}的对话"  # 返回默认标题
+        return f"Conversation with {character.name}"  # 返回默认标题
