@@ -58,15 +58,15 @@ def get_user_characters(user_id: str, db: Session = Depends(get_db)) -> Any:
         # 获取角色的标签
         tags = [tag.tag for tag in character.tags]
         
-        # 构建响应，确保字段名称与前端一致
-        result.append({
-            "id": str(character.id),  # 确保ID是字符串类型
-            "name": character.name,
-            "description": character.description,
-            "avatarUrl": character.avatar_url,  # 修改为avatarUrl以匹配前端
-            "isDefault": character.is_default,
-            "tags": tags
-        })
+        # 构建响应
+        result.append(CharacterWithTags(
+            id=character.id,
+            name=character.name,
+            description=character.description,
+            avatar=character.avatar_url,
+            isDefault=character.is_default,
+            tags=tags,
+        ))
     
     return result
 

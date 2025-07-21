@@ -93,17 +93,17 @@ def create_conversation(conversation_in: ConversationCreate, user_id: str, db: S
     # 刷新所有对象以获取最新状态
     db.refresh(conversation)
     db.refresh(ai_message)
-    
+
     # 返回对话信息
     return {
         "id": str(conversation.id),
         "title": conversation.title,
         "topic": conversation.topic,
         "summary": conversation.summary,
-        "backgroundUrl": conversation.background_url,
-        "userId": conversation.user_id,
-        "characterId": conversation.character_id,
-        "updatedAt": conversation.updated_at.isoformat() if conversation.updated_at else None
+        "background_url": conversation.background_url,
+        "user_id": conversation.user_id,
+        "character_id": conversation.character_id,
+        "updated_at": conversation.updated_at.isoformat() if conversation.updated_at else None
     }
 
 @router.get("/user/{user_id}", response_model=List[dict])
