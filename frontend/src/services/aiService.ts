@@ -92,9 +92,7 @@ export async function getAiResponse(
 
 // 创建新对话， 然后让ai生成第一条回复。 再返回对话id
 //TODO 这个有点难，再看看改不改
-interface CreateConversationResponse {
-    conversationId: string;
-}
+
 export const createConversation = async (
     userId: string,
     characterId: string,
