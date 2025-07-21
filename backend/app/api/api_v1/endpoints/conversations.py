@@ -18,16 +18,16 @@ def get_conversation(conversation_id: str, db: Session = Depends(get_db)) -> Any
             detail="对话不存在",
         )
     
-    return ConversationResponse(
-        id=conversation.id,
-        title=conversation.title,
-        topic=conversation.topic,
-        summary=conversation.summary,
-        background_url=conversation.background_url,
-        user_id=conversation.user_id,
-        character_id=conversation.character_id,
-        updated_at=conversation.updated_at,
-    )
+    return {
+        "id": str(conversation.id),
+        "title": conversation.title,
+        "topic": conversation.topic,
+        "summary": conversation.summary,
+        "backgroundUrl": conversation.background_url,
+        "userId": conversation.user_id,
+        "characterId": conversation.character_id,
+        "updatedAt": conversation.updated_at.isoformat(),
+    }
 
 @router.get("/{conversation_id}/messages", response_model=List[dict])
 def get_conversation_messages(conversation_id: str, db: Session = Depends(get_db)) -> Any:
@@ -44,7 +44,8 @@ def get_conversation_messages(conversation_id: str, db: Session = Depends(get_db
     result = []
     for msg in messages:
         result.append({
-            "id": msg.id,
+            "id": str(msg.id),
+            "conversationId": str(conversation_id),
             "content": msg.content,
             "isUser": msg.is_user,
             "timestamp": msg.timestamp.isoformat(),
@@ -52,7 +53,7 @@ def get_conversation_messages(conversation_id: str, db: Session = Depends(get_db
     
     return result
 
-@router.post("/create", response_model=ConversationWithMessages)
+@router.post("/", response_model=ConversationWithMessages)
 def create_conversation(conversation_in: ConversationCreate, user_id: str, db: Session = Depends(get_db)) -> Any:
     """创建新对话并返回AI的第一条回复"""
     # 检查角色是否存在
@@ -94,27 +95,29 @@ def create_conversation(conversation_in: ConversationCreate, user_id: str, db: S
     db.refresh(conversation)
     
     # 构建响应
-    return ConversationWithMessages(
-        id=conversation.id,
-        title=conversation.title,
-        topic=conversation.topic,
-        summary=conversation.summary,
-        background_url=conversation.background_url,
-        user_id=conversation.user_id,
-        character_id=conversation.character_id,
-        updated_at=conversation.updated_at,
-        messages=[
+    return {
+        "id": str(conversation.id),
+        "title": conversation.title,
+        "topic": conversation.topic,
+        "summary": conversation.summary,
+        "backgroundUrl": conversation.background_url,
+        "userId": conversation.user_id,
+        "characterId": conversation.character_id,
+        "updatedAt": conversation.updated_at.isoformat(),
+        "messages": [
             {
-                "id": user_message.id,
+                "id": str(user_message.id),
+                "conversationId": str(conversation.id),
                 "content": user_message.content,
                 "isUser": user_message.is_user,
                 "timestamp": user_message.timestamp.isoformat(),
             },
             {
-                "id": ai_message.id,
+                "id": str(ai_message.id),
+                "conversationId": str(conversation.id),
                 "content": ai_message.content,
                 "isUser": ai_message.is_user,
                 "timestamp": ai_message.timestamp.isoformat(),
             },
         ],
-    )
+    }

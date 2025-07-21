@@ -1,14 +1,12 @@
 import uvicorn
 from app.db.init_db import init_db
-from app.db.session import SessionLocal
-from app.db.create_db import create_tables
+from app.db.session import SessionLocal, engine
+from app.models import Base
 
 def init():
+    Base.metadata.create_all(bind=engine)
+
     """初始化数据库"""
-    # 创建数据库表
-    create_tables()
-    
-    # 初始化数据
     db = SessionLocal()
     init_db(db)
 

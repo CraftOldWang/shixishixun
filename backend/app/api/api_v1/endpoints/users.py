@@ -48,7 +48,12 @@ def register_user(user_in: UserCreate, db: Session = Depends(get_db)) -> Any:
 
 @router.post("/login")
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)) -> Any:
-    """用户登录"""
+    """用户登录
+    接收 application/x-www-form-urlencoded 格式的请求
+    参数:
+        - username: 用户名
+        - password: 密码
+    """
     # 查找用户
     user = db.query(User).filter(User.username == form_data.username).first()
     if not user or not verify_password(form_data.password, user.hashed_password):
@@ -57,12 +62,18 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
             detail="用户名或密码错误",
         )
     
-    # 返回用户信息
+    # 生成简单的访问令牌（在实际应用中应该使用 JWT）
+    access_token = f"user_{user.id}"  # 简单的令牌格式
+    
+    # 返回符合前端 authService.ts 期望的格式
     return {
-        "access_token": "dummy_token",  # 前端需要，但我们不使用JWT
+        "access_token": access_token,
         "token_type": "bearer",
-        "user_id": user.id,
-        "username": user.username,
+        "user": {
+            "id": str(user.id),
+            "username": user.username,
+            "email": user.email
+        }
     }
 
 @router.get("/me", response_model=UserResponse)
