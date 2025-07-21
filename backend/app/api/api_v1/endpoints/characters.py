@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import Any, List
 
 from app.db.session import get_db
-from app.models.models import Character, CharacterTag
+from app.models.models import Character, CharacterTag, Conversation
 from app.schemas.character import CharacterCreate, CharacterResponse, CharacterWithTags
 
 router = APIRouter()
@@ -138,7 +138,7 @@ def get_character_sessions(character_id: str, user_id: str, db: Session = Depend
     # 获取该角色与用户的所有对话
     conversations = db.query(Character.conversations).filter(
         Character.id == character_id,
-        Character.conversations.user_id == user_id,
+        Conversation.user_id == user_id,
     ).all()
     
     # 构建响应
