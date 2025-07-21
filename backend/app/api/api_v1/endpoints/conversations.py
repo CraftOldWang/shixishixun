@@ -26,7 +26,7 @@ def get_conversation(conversation_id: str, db: Session = Depends(get_db)) -> Any
         "backgroundUrl": conversation.background_url,
         "user_id": conversation.user_id,
         "character_id": conversation.character_id,
-        "updated_at": conversation.updated_at.isoformat()
+        "updated_at": conversation.updated_at.isoformat() if conversation.updated_at else None
     }
 
 @router.get("/{conversation_id}/messages", response_model=List[dict])

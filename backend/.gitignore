@@ -30,7 +30,7 @@ ENV/
 *.sqlite3
 
 # 环境变量文件
-# .env
+.env
 
 # 日志文件
 *.log
