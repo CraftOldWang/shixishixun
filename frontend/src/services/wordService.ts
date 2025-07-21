@@ -50,7 +50,9 @@ export const checkIfFavorited = async (
 
     // 真实
     const res = await apiClient.get(
-        `/api/check?word=${encodeURIComponent(word)}&user_id=${userId}`
+        `/api/favorites/check?word=${encodeURIComponent(
+            word
+        )}&user_id=${userId}`
     );
     // 返回如下样子的json
     // {
@@ -66,8 +68,44 @@ export const addFavorite = async (word: string, userId: string) => {
     return "";
     */
     // 真实
-    const res = await apiClient.post( `/api/favorites/add?user_id=${userId}&word=${word}`);
-    return res.data;
+    // 第一步：从第三方 API 获取词典信息
+    const res = await fetch(
+        `https://api.dictionaryapi.dev/api/v2/entries/en/${word}`
+    );
+
+    if (!res.ok) {
+        throw new Error("查不到这个单词");
+    }
+
+    const data = await res.json();
+
+    // 第二步：提取需要的信息（安全处理）
+    const entry = data[0];
+
+    const pronunciation = entry.phonetics?.find((p: { text: any; }) => p.text)?.text || "N/A";
+
+    const pos = entry.meanings?.[0]?.partOfSpeech || "unknown";
+
+    const context =
+        entry.meanings?.[0]?.definitions?.[0]?.example ||
+        entry.meanings?.[0]?.definitions?.[0]?.definition ||
+        "No example available";
+
+    // 第三步：组装要传给后端的数据结构
+    const payload = {
+        word,
+        pronunciation,
+        pos,
+        context,
+    };
+
+    // 第四步：POST 请求发送到后端
+    const res2 = await apiClient.post(
+        `/api/favorites/add?user_id=${userId}`,
+        payload
+    );
+
+    return res2.data;
 };
 
 // 去除收藏
@@ -77,7 +115,9 @@ export const removeFavorite = async (word: string, userId: string) => {
     return "";
     */
     // 真实
-    const res = await apiClient.post( `/api/favorites/remove?user_id=${userId}&word=${word}`);
+    const res = await apiClient.post(
+        `/api/favorites/remove?user_id=${userId}&word=${word}`
+    );
     return res.data;
 };
 

@@ -349,7 +349,6 @@ export default function ChatPage() {
         const fetchOptions = async () => {
             try {
                 const options = await fetchAiOptions(
-                    currentCharacterReply.content,
                     conversationId!
                 );
                 if (Array.isArray(options)) {
@@ -395,7 +394,7 @@ export default function ChatPage() {
 
             // 调接口获取AI回复
             const aiResponse = await getAiResponse(content, conversation!.id);
-
+            console.log("ai回复")
             // 添加AI回复消息
             setMessages((prev) => [...prev!, aiResponse]);
         } catch (err) {

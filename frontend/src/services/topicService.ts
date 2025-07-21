@@ -31,12 +31,21 @@ export const getPredefinedTopics = async (): Promise<
     // };
     console.log("Fetching predefined topics...");
 
-    const res = await apiClient.get<Record<string, string[]>>(
-        "/api/topics/predefined"
-    );
+    const res = await apiClient.get<
+        {
+            id: string;
+            name: string;
+            topics: { id: string; title: string }[];
+        }[]
+    >("/api/topics");
 
-    return res.data;
+    // 转换为 Record<string, string[]>
+    const topicMap: Record<string, string[]> = {};
+    res.data.forEach((category) => {
+        topicMap[category.name] = category.topics.map((topic) => topic.title);
+    });
 
+    return topicMap;
 };
 
 export const generateTopics = async (prompt?: string): Promise<string[]> => {
@@ -58,19 +67,22 @@ export const generateTopics = async (prompt?: string): Promise<string[]> => {
     // 真实api调用
     // 要求返回三个字符串的数组 string[]，  当prompt 不为空， 返回相应话题， 为空返回随机话题
     // 以 后端api 返回下面样子的json 来写的。
-    // {
-    //     "topics": [
+    // 
+    //      [
     //         "How technology changed communication",
     //         "The ethics of AI-generated content",
     //         "Explaining blockchain to a 5-year-old"
     //     ]
-    // }
+    // 
     try {
-        const res = await apiClient.post<{ topics: string[] }>("/api/topics/generate", {
-            prompt: prompt || "",
-        });
+        const res = await apiClient.post<string[]>(
+            "/api/topics/generate",
+            {
+                prompt: prompt || "",
+            }
+        );
 
-        return res.data.topics;
+        return res.data;
     } catch (error) {
         console.error("Failed to generate topics:", error);
         return [];
