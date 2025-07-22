@@ -95,9 +95,10 @@ def fetch_ai_response(request: AiResponseRequest, db: Session = Depends(get_db))
         db.flush()
         db.refresh(ai_message)
         
-        # 更新对话标题（每3条消息更新一次）
+        # 更新对话标题
         all_messages = messages + [user_message, ai_message]
-        if len(all_messages) % 3 == 0:
+        
+        if len(all_messages) > 1:
             new_title = generate_conversation_title(all_messages, character, conversation.topic)
             conversation.title = new_title
         

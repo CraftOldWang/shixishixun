@@ -128,4 +128,8 @@ def generate_conversation_title(messages: List[Message], character: Character, t
         return response.strip()
     except Exception as e:
         print(f"生成标题失败: {str(e)}")
-        return f"Conversation with {character.name}"  # 返回默认标题
+        return f"与{character.name}的对话"  # 返回默认标题
+
+def get_dashscope_response(prompt: str) -> str:
+    """调用通义千问模型生成内容"""
+    return call_qwen_model(prompt)
