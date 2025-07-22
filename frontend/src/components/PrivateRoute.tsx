@@ -3,7 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 // 开发时不进行权限验证， 可以随便跳转网页
 // 如果用JWT， 应该需要进行改动。
-const IS_DEV_MODE = true;
+const IS_DEV_MODE = false;
 
 interface PrivateRouteProps {
   children: React.ReactNode;
