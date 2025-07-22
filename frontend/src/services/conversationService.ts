@@ -184,15 +184,17 @@ export async function fetchConversationsByUser(
     */
     //2. 调用api
     const response = await apiClient.get(`/api/conversations/user/${userId}`);
+    console.log(response.data);
+    console.log("上面是后端传回来的");
     return response.data
         .map(
             (item: any): Conversation => ({
                 id: item.id,
                 title: item.title,
-                topic: item.scene, // scene -> topic 映射
+                topic: item.topic, // scene -> topic 映射
                 summary: item.summary,
-                updatedAt: item.timestamp, // timestamp -> updatedAt 映射
-                characterId: item.characterId, // 从参数中补全
+                updatedAt: item.updatedAt, // timestamp -> updatedAt 映射
+                characterId: item.character.id, // 从参数中补全
                 userId: userId,
             })
         )

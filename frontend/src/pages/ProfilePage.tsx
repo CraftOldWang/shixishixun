@@ -28,6 +28,7 @@ const ProfilePage = () => {
         try {
             const data = await fetchConversationsByUser(user.id);
             setConversations(data);
+            console.log(data);
         } catch (err) {
             console.error("获取会话历史失败:", err);
             setError("加载会话历史失败，请稍后重试");
@@ -194,6 +195,7 @@ const ProfilePage = () => {
                         ) : (
                             <div className="grid grid-cols-1 gap-5">
                                 {conversations.map((conv) => (
+                                    
                                     <div
                                         key={conv.id}
                                         className="bg-white rounded-xl shadow-md p-6 cursor-pointer hover:shadow-lg transition-shadow"
@@ -229,7 +231,7 @@ const ProfilePage = () => {
                                             </div>
                                             <div className="text-sm text-gray-500 whitespace-nowrap">
                                                 最后活跃:{" "}
-                                                {formatDate(conv.updatedAt)}
+                                                {new Date(conv.updatedAt).toLocaleString()}
                                             </div>
                                         </div>
                                     </div>

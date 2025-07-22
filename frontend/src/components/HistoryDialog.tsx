@@ -86,7 +86,7 @@ const HistoryDialog: FC<HistoryDialogProps> = ({ character, onClose }) => {
                 {/* Accessing properties from your Conversation type */}
                 <p className="text-sm text-gray-600 mt-1">话题：{conv.topic}</p>
                 <p className="text-sm text-gray-500 mt-1 truncate">
-                    摘要：{conv.summary}
+                    {/* 摘要：{conv.summary} */}
                 </p>
                 <p className="text-xs text-gray-400 mt-2">
                     最后更新：{new Date(conv.updatedAt).toLocaleString()}
