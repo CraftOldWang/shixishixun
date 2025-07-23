@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { Volume2, X, Send, Search, MessageSquare, Menu } from "lucide-react";
 import { Star } from "lucide-react"; // 你可以换成 StarOff 或 Bookmark 等
 import { ChevronLeft, ChevronRight, ArrowLeft } from "lucide-react";
+import { StopCircle } from "lucide-react";
+
 import { useParams, useNavigate } from "react-router-dom";
 import type {
     User,
@@ -199,6 +201,7 @@ const ConversationSidebar: React.FC<{
 };
 
 // 右侧 - 当前角色回复
+
 const CurrentReplyPanel: React.FC<{
     message: Message | null;
     onWordMouseEnter: (
@@ -207,6 +210,8 @@ const CurrentReplyPanel: React.FC<{
     ) => void;
     onWordMouseLeave: () => void;
 }> = ({ message, onWordMouseEnter, onWordMouseLeave }) => {
+    const audioRef = useRef<HTMLAudioElement | null>(null);
+
     const handleWordHover = (e: React.MouseEvent<HTMLSpanElement>) => {
         const text = e.currentTarget.innerText.trim().replace(/[.,!?]/g, "");
         if (text) {
@@ -215,10 +220,43 @@ const CurrentReplyPanel: React.FC<{
         }
     };
 
-    const handleTTS = (content: string) => {
-        if ("speechSynthesis" in window && content) {
-            const utterance = new SpeechSynthesisUtterance(content);
-            speechSynthesis.speak(utterance);
+    const handleTTS = async (text: string) => {
+        try {
+            const response = await fetch("http://localhost:8000/api/ai/tts", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    text,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error("TTS请求失败");
+            }
+
+            const blob = await response.blob();
+            const audioUrl = URL.createObjectURL(blob);
+            const audio = new Audio(audioUrl);
+
+            // 停止当前播放
+            if (audioRef.current) {
+                audioRef.current.pause();
+                audioRef.current.currentTime = 0;
+            }
+
+            audioRef.current = audio;
+            audio.play();
+        } catch (error) {
+            console.error("TTS播放失败:", error);
+        }
+    };
+
+    const handleStopTTS = () => {
+        if (audioRef.current) {
+            audioRef.current.pause();
+            audioRef.current.currentTime = 0;
         }
     };
 
@@ -244,12 +282,20 @@ const CurrentReplyPanel: React.FC<{
                                     </span>
                                 ))}
                         </p>
-                        <button
-                            onClick={() => handleTTS(message.content)}
-                            className="text-gray-300 hover:text-white mt-4 flex items-center gap-2"
-                        >
-                            <Volume2 size={20} /> 朗读
-                        </button>
+                        <div className="mt-4 flex gap-4">
+                            <button
+                                onClick={() => handleTTS(message.content)}
+                                className="text-gray-300 hover:text-white flex items-center gap-2"
+                            >
+                                <Volume2 size={20} /> 朗读
+                            </button>
+                            <button
+                                onClick={handleStopTTS}
+                                className="text-gray-300 hover:text-white flex items-center gap-2"
+                            >
+                                <StopCircle size={20} /> 停止
+                            </button>
+                        </div>
                     </div>
                 ) : (
                     <div className="text-center text-gray-400">
@@ -302,13 +348,13 @@ export default function ChatPage() {
                     conversationId
                 );
                 setConversation(conv);
-                console.log("对话")
+                console.log("对话");
                 console.log(conv);
 
                 // 这个貌似可以跟下面获取角色信息...并发执行。。不过不管了
                 const msg = await getMessagesByConversationId(conversationId);
                 setMessages(msg);
-                console.log("消息数组")
+                console.log("消息数组");
 
                 console.log(msg);
 
@@ -451,17 +497,19 @@ export default function ChatPage() {
                     {conversation.title || "对话"}
                 </h1>
                 <div className="w-12"></div> {/* 为了保持标题居中 */}
-                <div className="w-12 flex justify-end"> {/* 右侧容器 */}
+                <div className="w-12 flex justify-end">
+                    {" "}
+                    {/* 右侧容器 */}
                     <button
                         onClick={handleGoBack}
                         className="p-2 rounded-full hover:bg-gray-700 transition-colors"
                         title="返回首页"
                         aria-label="返回首页"
                     >
-                        <X size={24} /> {/* 使用 X 图标更符合“关闭”当前页面的感觉 */}
+                        <X size={24} />{" "}
+                        {/* 使用 X 图标更符合“关闭”当前页面的感觉 */}
                     </button>
                 </div>
-
             </div>
 
             {/* 侧边栏 */}
@@ -520,7 +568,7 @@ export default function ChatPage() {
                     <div className="absolute inset-0 bg-black/30"></div>
                 </div>
                 {/* 角色和当前回复面板 */}
-                <div className="relative z-10 flex-1 grid grid-cols-2 gap-6 p-6 overflow-hidden">
+                <div className="relative z-10 flex-1 grid grid-cols-2 gap-6 p-6 overflow-hidden items-start">
                     <div className="flex items-end justify-center">
                         <img
                             src={character.avatar}

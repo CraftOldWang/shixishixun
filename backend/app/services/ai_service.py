@@ -38,8 +38,10 @@ def call_qwen_model(prompt: str) -> str:
 
 def format_messages_for_prompt(messages: List[Message], character: Character, topic: str = None) -> str:
     """将消息格式化为提示"""
-    prompt = f"You are {character.name}, {character.description}. Always respond in English.\n"
-    
+    prompt = (
+        f"You are {character.name}, {character.description}.\n"
+        "Important: You must always reply only in fluent English. Never use any other language.\n"
+    )
     if topic:
         prompt += f"Current conversation topic: {topic}\n"
     
